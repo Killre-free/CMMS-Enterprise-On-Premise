@@ -1,0 +1,9 @@
+node_modules/
+.next/
+.env
+.env*.local
+npm-debug.log*
+*.tsbuildinfo
+next-env.d.ts
+/prisma/migrations/.tmp
+.DS_Store

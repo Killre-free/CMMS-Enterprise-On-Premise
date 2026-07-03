@@ -32,7 +32,7 @@ export const POST = withApiHandler(async (req, { user }) => {
           label: f.label,
           required: f.required,
           order: f.order,
-          config: f.config ?? {},
+          config: (f.config ?? {}) as any,
         })),
       },
     },
