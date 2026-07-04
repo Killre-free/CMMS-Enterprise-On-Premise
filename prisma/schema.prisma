@@ -1,0 +1,481 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["omitApi"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Auth / RBAC ─────────────────────────────────────────────────────────
+
+enum PermissionAction {
+  view
+  add
+  edit
+  delete
+}
+
+model Role {
+  id          String @id @default(cuid())
+  name        String @unique
+  description String?
+
+  users       User[]
+  permissions RolePermission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model RolePermission {
+  id        String            @id @default(cuid())
+  roleId    String
+  role      Role              @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  moduleKey String
+  action    PermissionAction
+
+  @@unique([roleId, moduleKey, action])
+}
+
+model UserPermissionOverride {
+  id        String            @id @default(cuid())
+  userId    String
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  moduleKey String
+  action    PermissionAction
+  isGranted Boolean
+
+  @@unique([userId, moduleKey, action])
+}
+
+// ── Org structure ───────────────────────────────────────────────────────
+
+model Plant {
+  id   String @id @default(cuid())
+  name String
+  code String @unique
+
+  departments Department[]
+  machines    Machine[]
+  users       User[]
+
+  createdAt DateTime @default(now())
+}
+
+model Department {
+  id      String  @id @default(cuid())
+  name    String
+  plantId String?
+  plant   Plant?  @relation(fields: [plantId], references: [id])
+
+  users    User[]
+  machines Machine[]
+
+  createdAt DateTime @default(now())
+}
+
+// ── Users ────────────────────────────────────────────────────────────────
+
+model User {
+  id                  String    @id @default(cuid())
+  employeeId          String    @unique
+  username            String    @unique
+  passwordHash        String
+  firstName           String
+  lastName             String
+  email               String?
+  phone               String?
+  position            String?
+  shift               String?
+
+  departmentId        String?
+  department          Department? @relation(fields: [departmentId], references: [id])
+  plantId             String?
+  plant               Plant?    @relation(fields: [plantId], references: [id])
+
+  roleId              String
+  role                Role      @relation(fields: [roleId], references: [id])
+
+  supervisorId        String?
+  supervisor          User?     @relation("UserSupervisor", fields: [supervisorId], references: [id])
+  subordinates        User[]    @relation("UserSupervisor")
+
+  isSuperAdmin         Boolean  @default(false)
+  isActive             Boolean  @default(true)
+  isLocked             Boolean  @default(false)
+  lockedUntil          DateTime?
+  failedLoginAttempts  Int      @default(0)
+  lastLoginAt          DateTime?
+  forcePasswordChange  Boolean  @default(true)
+
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  permissionOverrides  UserPermissionOverride[]
+  workOrdersRequested  WorkOrder[] @relation("WorkOrderRequestedBy")
+  workOrdersAssigned   WorkOrder[] @relation("WorkOrderAssignedTo")
+  workOrderStateChanges WorkOrderStateHistory[]
+  checkSheetSubmissions CheckSheetSubmission[]
+  stockTransactions    StockTransaction[]
+  notifications        Notification[]
+  auditLogs            AuditLog[]
+}
+
+// ── Machines ────────────────────────────────────────────────────────────
+
+enum MachineLifeCycleStatus {
+  Active
+  UnderMaintenance
+  Retired
+}
+
+model Machine {
+  id           String   @id @default(cuid())
+  machineCode  String   @unique
+  machineName  String
+  manufacturer String?
+  model        String?
+  serialNumber String?
+  location     String?
+  criticality  String?
+  installedAt  DateTime?
+
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+  plantId      String?
+  plant        Plant?      @relation(fields: [plantId], references: [id])
+
+  lifeCycleStatus MachineLifeCycleStatus @default(Active)
+  runningHour     Float                  @default(0)
+  qrCode          String?
+  barcode         String?
+
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  pmPlans    PMPlan[]
+  workOrders WorkOrder[]
+}
+
+// ── Work Orders ─────────────────────────────────────────────────────────
+
+enum WorkOrderPriority {
+  Low
+  Medium
+  High
+  Critical
+}
+
+enum WorkOrderStatus {
+  ProductionRequest
+  WaitingTechnician
+  Accepted
+  InProgress
+  WaitingSparePart
+  WaitingMaker
+  WaitingProduction
+  WaitingBudgetApproval
+  Completed
+  WaitingApproval
+  Closed
+}
+
+model WorkOrder {
+  id          String            @id @default(cuid())
+  woNumber    String            @unique
+  title       String
+  description String?
+  priority    WorkOrderPriority @default(Medium)
+  status      WorkOrderStatus   @default(ProductionRequest)
+
+  machineId String
+  machine   Machine @relation(fields: [machineId], references: [id])
+
+  requestedById String
+  requestedBy   User   @relation("WorkOrderRequestedBy", fields: [requestedById], references: [id])
+  assignedToId  String?
+  assignedTo    User?   @relation("WorkOrderAssignedTo", fields: [assignedToId], references: [id])
+
+  estimatedHours    Float?
+  reportPhotos      String[] @default([])
+  completionPhotos  String[] @default([])
+
+  version     Int       @default(0)
+  startedAt   DateTime?
+  completedAt DateTime?
+  closedAt    DateTime?
+
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  stateHistory          WorkOrderStateHistory[]
+  partsUsed              WorkOrderSparePart[]
+  checkSheetSubmissions CheckSheetSubmission[]
+}
+
+model WorkOrderStateHistory {
+  id          String           @id @default(cuid())
+  workOrderId String
+  workOrder   WorkOrder        @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  fromStatus  WorkOrderStatus?
+  toStatus    WorkOrderStatus
+
+  changedById String
+  changedBy   User     @relation(fields: [changedById], references: [id])
+  changedAt   DateTime @default(now())
+
+  comment      String?
+  photos       String[] @default([])
+  videos       String[] @default([])
+  voiceNotes   String[] @default([])
+  gpsLatitude  Float?
+  gpsLongitude Float?
+}
+
+model WorkOrderSparePart {
+  id          String  @id @default(cuid())
+  workOrderId String
+  workOrder   WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  sparePartId String
+  sparePart   SparePart @relation(fields: [sparePartId], references: [id])
+  quantity    Float
+  unitCost    Float?
+}
+
+// ── Preventive Maintenance ─────────────────────────────────────────────
+
+enum PMFrequencyType {
+  Daily
+  Weekly
+  Monthly
+  Quarterly
+  Yearly
+  RunningHour
+}
+
+model PMPlan {
+  id             String          @id @default(cuid())
+  name           String
+  description    String?
+  machineId      String
+  machine        Machine         @relation(fields: [machineId], references: [id])
+  frequencyType  PMFrequencyType
+  frequencyValue Float?
+  nextDueAt      DateTime?
+  lastGeneratedAt DateTime?
+  isActive       Boolean         @default(true)
+
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ── Check Sheets ────────────────────────────────────────────────────────
+
+enum CheckSheetFieldType {
+  Text
+  Number
+  Boolean
+  Select
+  Photo
+  Signature
+  Calculated
+  Date
+}
+
+enum CheckSheetLinkedType {
+  Standalone
+  WorkOrder
+  PM
+}
+
+enum CheckSheetSubmissionStatus {
+  Draft
+  Submitted
+}
+
+model CheckSheetTemplate {
+  id       String  @id @default(cuid())
+  name     String
+  mode     String  @default("Classic")
+  version  Int     @default(1)
+  isActive Boolean @default(true)
+
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  fields      CheckSheetField[]
+  submissions CheckSheetSubmission[]
+}
+
+model CheckSheetField {
+  id         String              @id @default(cuid())
+  templateId String
+  template   CheckSheetTemplate  @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  key        String
+  type       CheckSheetFieldType
+  label      String
+  required   Boolean             @default(false)
+  order      Int
+  config     Json?
+
+  responses CheckSheetResponse[]
+}
+
+model CheckSheetSubmission {
+  id              String                     @id @default(cuid())
+  templateId      String
+  template        CheckSheetTemplate         @relation(fields: [templateId], references: [id])
+  templateVersion Int
+  linkedType      CheckSheetLinkedType        @default(Standalone)
+  linkedWorkOrderId String?
+  linkedWorkOrder WorkOrder?                 @relation(fields: [linkedWorkOrderId], references: [id])
+  submittedById   String
+  submittedBy     User                       @relation(fields: [submittedById], references: [id])
+  submittedAt     DateTime?
+  status          CheckSheetSubmissionStatus @default(Draft)
+  createdAt       DateTime                   @default(now())
+
+  responses CheckSheetResponse[]
+}
+
+model CheckSheetResponse {
+  id           String                @id @default(cuid())
+  submissionId String
+  submission   CheckSheetSubmission  @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  fieldId      String
+  field        CheckSheetField       @relation(fields: [fieldId], references: [id])
+  value        Json?
+  attachments  String[]              @default([])
+}
+
+// ── Spare Parts / Inventory ────────────────────────────────────────────
+
+enum StockTransactionType {
+  Receive
+  Issue
+  Return
+  Adjustment
+}
+
+enum ReorderSuggestionReason {
+  BelowSafetyStock
+}
+
+enum ReorderSuggestionStatus {
+  Pending
+  Approved
+  Rejected
+  Ordered
+}
+
+model SparePart {
+  id           String  @id @default(cuid())
+  partCode     String  @unique
+  partName     String
+  unit         String
+  currentStock Float   @default(0)
+  safetyStock  Float   @default(0)
+  maxStock     Float?
+  unitCost     Float?
+  category     String?
+  location     String?
+  qrCode       String?
+  barcode      String?
+
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions        StockTransaction[]
+  reorderSuggestions  ReorderSuggestion[]
+  workOrderLines      WorkOrderSparePart[]
+}
+
+model StockTransaction {
+  id            String               @id @default(cuid())
+  sparePartId   String
+  sparePart     SparePart            @relation(fields: [sparePartId], references: [id])
+  type          StockTransactionType
+  quantity      Float
+  unitCost      Float?
+  referenceType String?
+  referenceId   String?
+  performedById String
+  performedBy   User                 @relation(fields: [performedById], references: [id])
+  createdAt     DateTime             @default(now())
+}
+
+model ReorderSuggestion {
+  id           String                   @id @default(cuid())
+  sparePartId  String
+  sparePart    SparePart                @relation(fields: [sparePartId], references: [id])
+  suggestedQty Float
+  reason       ReorderSuggestionReason
+  status       ReorderSuggestionStatus  @default(Pending)
+  createdAt    DateTime                 @default(now())
+}
+
+// ── Notifications / Audit / Licensing ──────────────────────────────────
+
+enum NotificationType {
+  Info
+  Warning
+  Critical
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id])
+  title     String
+  message   String
+  type      NotificationType @default(Info)
+  module    String
+  linkUrl   String?
+  isRead    Boolean          @default(false)
+  readAt    DateTime?
+  deletedAt DateTime?
+  createdAt DateTime         @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  username   String?
+  action     String
+  module     String
+  recordId   String?
+  recordType String?
+  oldValue   Json?
+  newValue   Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+}
+
+model ModuleLicense {
+  id        String    @id @default(cuid())
+  moduleKey String    @unique
+  isEnabled Boolean   @default(true)
+  expiresAt DateTime?
+}
