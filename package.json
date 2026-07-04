@@ -9,7 +9,9 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "postinstall": "prisma generate",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "test": "echo \"No unit tests exist yet — nothing to run.\"",
+    "test:api": "echo \"No API tests exist yet — nothing to run.\""
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
