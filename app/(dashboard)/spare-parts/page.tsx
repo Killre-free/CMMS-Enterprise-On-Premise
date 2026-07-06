@@ -1,0 +1,183 @@
+"use client";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
+import { Plus } from "lucide-react";
+import { apiGet, apiPost, ApiError, type Page } from "@/lib/api-client";
+import { Badge } from "@/components/shared/Badge";
+import { Modal } from "@/components/shared/Modal";
+
+interface SparePart {
+  id: string;
+  partCode: string;
+  partName: string;
+  unit: string;
+  currentStock: number;
+  safetyStock: number;
+}
+
+const inputClass = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm";
+
+function CreateSparePartForm({ onDone }: { onDone: () => void }) {
+  const queryClient = useQueryClient();
+  const [partCode, setPartCode] = useState("");
+  const [partName, setPartName] = useState("");
+  const [unit, setUnit] = useState("pcs");
+  const [safetyStock, setSafetyStock] = useState("0");
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setSubmitting(true);
+    try {
+      await apiPost("/api/v1/spare-parts", {
+        partCode,
+        partName,
+        unit,
+        safetyStock: Number(safetyStock),
+      });
+      queryClient.invalidateQueries({ queryKey: ["spare-parts"] });
+      onDone();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to create spare part");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <div>
+        <label className="mb-1 block text-sm font-medium">Part Code</label>
+        <input required value={partCode} onChange={(e) => setPartCode(e.target.value)} className={inputClass} />
+      </div>
+      <div>
+        <label className="mb-1 block text-sm font-medium">Part Name</label>
+        <input required value={partName} onChange={(e) => setPartName(e.target.value)} className={inputClass} />
+      </div>
+      <div>
+        <label className="mb-1 block text-sm font-medium">Unit</label>
+        <input required value={unit} onChange={(e) => setUnit(e.target.value)} className={inputClass} />
+      </div>
+      <div>
+        <label className="mb-1 block text-sm font-medium">Safety Stock</label>
+        <input
+          type="number"
+          value={safetyStock}
+          onChange={(e) => setSafetyStock(e.target.value)}
+          className={inputClass}
+        />
+      </div>
+      {error && <p className="text-sm text-destructive">{error}</p>}
+      <button
+        type="submit"
+        disabled={submitting}
+        className="mt-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+      >
+        {submitting ? "Creating..." : "Create Spare Part"}
+      </button>
+    </form>
+  );
+}
+
+export default function SparePartsPage() {
+  const [search, setSearch] = useState("");
+  const [belowSafety, setBelowSafety] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const params = new URLSearchParams();
+  if (search) params.set("search", search);
+  if (belowSafety) params.set("belowSafety", "true");
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["spare-parts", search, belowSafety],
+    queryFn: () => apiGet<Page<SparePart>>(`/api/v1/spare-parts?${params.toString()}`),
+  });
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h1 className="text-xl font-semibold">Spare Parts</h1>
+        <button
+          onClick={() => setModalOpen(true)}
+          className="flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
+        >
+          <Plus size={16} /> New Spare Part
+        </button>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3">
+        <input
+          placeholder="Search by code or name..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className={`${inputClass} max-w-sm`}
+        />
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={belowSafety} onChange={(e) => setBelowSafety(e.target.checked)} />
+          Below safety stock only
+        </label>
+      </div>
+
+      <div className="overflow-x-auto rounded-lg border border-border">
+        <table className="w-full text-left text-sm">
+          <thead className="border-b border-border bg-muted/50">
+            <tr>
+              <th className="p-3 font-medium">Code</th>
+              <th className="p-3 font-medium">Name</th>
+              <th className="p-3 font-medium">Current Stock</th>
+              <th className="p-3 font-medium">Safety Stock</th>
+              <th className="p-3 font-medium">Unit</th>
+              <th className="p-3 font-medium"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {isLoading && (
+              <tr>
+                <td colSpan={6} className="p-6 text-center text-muted-foreground">
+                  Loading...
+                </td>
+              </tr>
+            )}
+            {error && (
+              <tr>
+                <td colSpan={6} className="p-6 text-center text-destructive">
+                  Failed to load spare parts.
+                </td>
+              </tr>
+            )}
+            {data?.data.length === 0 && (
+              <tr>
+                <td colSpan={6} className="p-6 text-center text-muted-foreground">
+                  No spare parts yet.
+                </td>
+              </tr>
+            )}
+            {data?.data.map((p) => (
+              <tr key={p.id} className="border-b border-border last:border-0 hover:bg-muted/50">
+                <td className="p-3">
+                  <Link href={`/spare-parts/${p.id}`} className="font-medium text-primary hover:underline">
+                    {p.partCode}
+                  </Link>
+                </td>
+                <td className="p-3">{p.partName}</td>
+                <td className="p-3">{p.currentStock}</td>
+                <td className="p-3">{p.safetyStock}</td>
+                <td className="p-3">{p.unit}</td>
+                <td className="p-3">
+                  {p.currentStock < p.safetyStock && <Badge color="red">Below safety</Badge>}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="New Spare Part">
+        <CreateSparePartForm onDone={() => setModalOpen(false)} />
+      </Modal>
+    </div>
+  );
+}
