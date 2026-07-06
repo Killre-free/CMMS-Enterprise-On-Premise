@@ -1,0 +1,68 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-cmms}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cmms_password}
+      POSTGRES_DB: ${POSTGRES_DB:-cmms_dev}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cmms}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - cmms
+
+  migrate:
+    build:
+      context: .
+      target: builder
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-cmms}:${POSTGRES_PASSWORD:-cmms_password}@postgres:5432/${POSTGRES_DB:-cmms_dev}
+    command: ["npx", "prisma", "migrate", "deploy"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - cmms
+
+  app:
+    build:
+      context: .
+      target: runner
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-cmms}:${POSTGRES_PASSWORD:-cmms_password}@postgres:5432/${POSTGRES_DB:-cmms_dev}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    networks:
+      - cmms
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    networks:
+      - cmms
+
+volumes:
+  postgres_data:
+
+networks:
+  cmms:
+    driver: bridge

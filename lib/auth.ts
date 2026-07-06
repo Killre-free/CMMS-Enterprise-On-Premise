@@ -10,6 +10,10 @@ const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_MINUTES = 30;
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  // This is an on-premise app reached via a LAN hostname or bare server IP
+  // (http://cmms, http://192.168.x.x) rather than a fixed public domain, so
+  // Auth.js can't validate the request Host against a single known value.
+  trustHost: true,
   session: {
     strategy: "jwt",
     maxAge: env.SESSION_TIMEOUT_HOURS * 60 * 60,
