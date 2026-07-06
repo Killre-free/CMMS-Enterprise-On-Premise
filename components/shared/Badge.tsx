@@ -51,3 +51,9 @@ export const STATUS_COLOR: Record<string, keyof typeof COLOR_MAP> = {
   WaitingApproval: "yellow",
   Closed: "gray",
 };
+
+export const NOTIFICATION_TYPE_COLOR: Record<string, keyof typeof COLOR_MAP> = {
+  Info: "blue",
+  Warning: "yellow",
+  Critical: "red",
+};

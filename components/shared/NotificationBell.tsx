@@ -39,6 +39,11 @@ export function NotificationBell() {
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
   }
 
+  async function markRead(id: string) {
+    await fetch(`/api/v1/notifications/${id}/read`, { method: "POST" });
+    queryClient.invalidateQueries({ queryKey: ["notifications"] });
+  }
+
   return (
     <div className="relative">
       <button onClick={() => setOpen((o) => !o)} aria-label="Notifications" className="relative">
@@ -63,6 +68,10 @@ export function NotificationBell() {
                 <Link
                   key={n.id}
                   href={n.linkUrl ?? "#"}
+                  onClick={() => {
+                    if (!n.isRead) markRead(n.id);
+                    setOpen(false);
+                  }}
                   className={`block border-b border-border p-3 text-sm hover:bg-muted ${n.isRead ? "" : "bg-muted/50 font-medium"}`}
                 >
                   <div>{n.title}</div>
