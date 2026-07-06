@@ -14,6 +14,7 @@ import {
   Users,
   ScrollText,
   Settings as SettingsIcon,
+  FileBarChart,
   Moon,
   Sun,
   LogOut,
@@ -30,6 +31,7 @@ const NAV_ITEMS: { href: string; label: string; icon: typeof LayoutDashboard; mo
   { href: "/pm", label: "Preventive Maintenance", icon: CalendarCheck, moduleKey: "pm" },
   { href: "/check-sheets", label: "Check Sheets", icon: ListChecks, moduleKey: "checkSheet" },
   { href: "/spare-parts", label: "Spare Parts", icon: Package, moduleKey: "sparePart" },
+  { href: "/reports", label: "Reports", icon: FileBarChart, moduleKey: "reports" },
   { href: "/users", label: "Users", icon: Users, moduleKey: "users" },
   { href: "/audit-log", label: "Audit Log", icon: ScrollText, moduleKey: "auditLog" },
   { href: "/settings", label: "Settings", icon: SettingsIcon, moduleKey: "settings" },
@@ -52,7 +54,7 @@ export function DashboardShell({ user, children }: { user: SessionUser; children
     <div className="flex min-h-screen">
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-64 -translate-x-full border-r border-border bg-background transition-transform md:static md:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 w-64 -translate-x-full border-r border-border bg-background transition-transform md:static md:translate-x-0 print:hidden",
           sidebarOpen && "translate-x-0"
         )}
       >
@@ -81,7 +83,7 @@ export function DashboardShell({ user, children }: { user: SessionUser; children
       </aside>
 
       <div className="flex flex-1 flex-col">
-        <header className="flex h-14 items-center justify-between border-b border-border px-4">
+        <header className="flex h-14 items-center justify-between border-b border-border px-4 print:hidden">
           <button
             className="md:hidden"
             onClick={() => setSidebarOpen((s) => !s)}
