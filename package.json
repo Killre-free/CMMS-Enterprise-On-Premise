@@ -10,8 +10,8 @@
     "typecheck": "tsc --noEmit",
     "postinstall": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
-    "test": "echo \"No unit tests exist yet — nothing to run.\"",
-    "test:api": "echo \"No API tests exist yet — nothing to run.\""
+    "test": "node --import tsx --test tests/unit/**/*.test.ts",
+    "test:api": "node --import tsx --test tests/api/**/*.test.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
