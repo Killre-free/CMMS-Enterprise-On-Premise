@@ -158,6 +158,15 @@ export const permissionMatrixSchema = z.object({
   ),
 });
 
+// ── Settings ────────────────────────────────────────────────────────────
+
+export const systemSettingsUpdateSchema = z.object({
+  companyName: z.string().min(1).optional(),
+  logoUrl: z.string().url().optional(),
+  timezone: z.string().min(1).optional(),
+  language: z.string().min(1).optional(),
+});
+
 // ── Check Sheets ────────────────────────────────────────────────────────
 
 const checkSheetFieldSchema = z.object({

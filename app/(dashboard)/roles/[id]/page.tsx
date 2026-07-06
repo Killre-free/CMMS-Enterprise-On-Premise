@@ -21,6 +21,8 @@ const MODULES = [
   { key: "sparePart", label: "Spare Parts" },
   { key: "reports", label: "Reports" },
   { key: "users", label: "Users & Roles" },
+  { key: "auditLog", label: "Audit Log" },
+  { key: "settings", label: "Settings" },
 ];
 const ACTIONS = ["view", "add", "edit", "delete"] as const;
 

@@ -479,3 +479,13 @@ model ModuleLicense {
   isEnabled Boolean   @default(true)
   expiresAt DateTime?
 }
+
+// Singleton row (id is always "singleton") holding company-wide display settings.
+model SystemSettings {
+  id          String   @id @default("singleton")
+  companyName String   @default("My Company")
+  logoUrl     String?
+  timezone    String   @default("Asia/Bangkok")
+  language    String   @default("en")
+  updatedAt   DateTime @updatedAt
+}

@@ -12,6 +12,8 @@ import {
   ListChecks,
   Package,
   Users,
+  ScrollText,
+  Settings as SettingsIcon,
   Moon,
   Sun,
   LogOut,
@@ -29,6 +31,8 @@ const NAV_ITEMS: { href: string; label: string; icon: typeof LayoutDashboard; mo
   { href: "/check-sheets", label: "Check Sheets", icon: ListChecks, moduleKey: "checkSheet" },
   { href: "/spare-parts", label: "Spare Parts", icon: Package, moduleKey: "sparePart" },
   { href: "/users", label: "Users", icon: Users, moduleKey: "users" },
+  { href: "/audit-log", label: "Audit Log", icon: ScrollText, moduleKey: "auditLog" },
+  { href: "/settings", label: "Settings", icon: SettingsIcon, moduleKey: "settings" },
 ];
 
 export function DashboardShell({ user, children }: { user: SessionUser; children: ReactNode }) {
