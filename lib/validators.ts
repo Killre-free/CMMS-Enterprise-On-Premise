@@ -139,6 +139,25 @@ export const stockTransactionSchema = z.object({
   referenceId: z.string().optional(),
 });
 
+// ── Roles & Permissions ────────────────────────────────────────────────
+
+export const roleCreateSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().optional(),
+});
+
+export const roleUpdateSchema = roleCreateSchema.partial();
+
+export const permissionMatrixSchema = z.object({
+  permissions: z.array(
+    z.object({
+      moduleKey: z.string().min(1),
+      action: z.enum(["view", "add", "edit", "delete"]),
+      granted: z.boolean(),
+    })
+  ),
+});
+
 // ── Check Sheets ────────────────────────────────────────────────────────
 
 const checkSheetFieldSchema = z.object({

@@ -11,6 +11,7 @@ import {
   CalendarCheck,
   ListChecks,
   Package,
+  Users,
   Moon,
   Sun,
   LogOut,
@@ -27,6 +28,7 @@ const NAV_ITEMS: { href: string; label: string; icon: typeof LayoutDashboard; mo
   { href: "/pm", label: "Preventive Maintenance", icon: CalendarCheck, moduleKey: "pm" },
   { href: "/check-sheets", label: "Check Sheets", icon: ListChecks, moduleKey: "checkSheet" },
   { href: "/spare-parts", label: "Spare Parts", icon: Package, moduleKey: "sparePart" },
+  { href: "/users", label: "Users", icon: Users, moduleKey: "users" },
 ];
 
 export function DashboardShell({ user, children }: { user: SessionUser; children: ReactNode }) {
