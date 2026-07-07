@@ -6,6 +6,9 @@ import {
   changePasswordSchema,
   userCreateSchema,
   stockTransactionSchema,
+  machineImportRowSchema,
+  sparePartImportRowSchema,
+  userImportRowSchema,
 } from "@/lib/validators";
 
 describe("parseOrThrow", () => {
@@ -94,6 +97,74 @@ describe("stockTransactionSchema", () => {
       type: "Receive",
       quantity: 10,
       unitCost: 5.5,
+    });
+    assert.equal(result.success, true);
+  });
+});
+
+describe("machineImportRowSchema", () => {
+  it("requires machineCode and machineName", () => {
+    const result = machineImportRowSchema.safeParse({ manufacturer: "Haas" });
+    assert.equal(result.success, false);
+  });
+
+  it("accepts a minimal valid row using human-readable relation names", () => {
+    const result = machineImportRowSchema.safeParse({
+      machineCode: "MC-001",
+      machineName: "CNC Lathe",
+      departmentName: "Production",
+      plantCode: "PLT-01",
+    });
+    assert.equal(result.success, true);
+  });
+});
+
+describe("sparePartImportRowSchema", () => {
+  it("coerces spreadsheet numeric strings into numbers", () => {
+    const result = sparePartImportRowSchema.safeParse({
+      partCode: "SP-001",
+      partName: "Ball Bearing",
+      unit: "pcs",
+      safetyStock: "5",
+      currentStock: "10",
+    });
+    assert.equal(result.success, true);
+    if (result.success) {
+      assert.equal(result.data.safetyStock, 5);
+      assert.equal(result.data.currentStock, 10);
+    }
+  });
+
+  it("rejects a missing safetyStock", () => {
+    const result = sparePartImportRowSchema.safeParse({
+      partCode: "SP-001",
+      partName: "Ball Bearing",
+      unit: "pcs",
+    });
+    assert.equal(result.success, false);
+  });
+});
+
+describe("userImportRowSchema", () => {
+  it("requires roleName since roleId is not human-readable", () => {
+    const result = userImportRowSchema.safeParse({
+      employeeId: "E1",
+      username: "jsmith",
+      password: "password123",
+      firstName: "John",
+      lastName: "Smith",
+    });
+    assert.equal(result.success, false);
+  });
+
+  it("accepts a valid row with roleName resolved later at the API layer", () => {
+    const result = userImportRowSchema.safeParse({
+      employeeId: "E1",
+      username: "jsmith",
+      password: "password123",
+      firstName: "John",
+      lastName: "Smith",
+      roleName: "Technician",
     });
     assert.equal(result.success, true);
   });

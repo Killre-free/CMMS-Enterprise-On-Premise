@@ -310,5 +310,18 @@
     "permissionsSaved": "บันทึกสิทธิ์การใช้งานแล้ว",
     "saving": "กำลังบันทึก...",
     "savePermissions": "บันทึกสิทธิ์การใช้งาน"
+  },
+  "Import": {
+    "importButton": "นำเข้าข้อมูล",
+    "downloadTemplate": "ดาวน์โหลดเทมเพลต",
+    "chooseFile": "เลือกไฟล์",
+    "parseFailed": "ไม่สามารถอ่านไฟล์ได้ กรุณาใช้เทมเพลตที่ให้ไว้",
+    "importFailed": "นำเข้าข้อมูลไม่สำเร็จ กรุณาลองใหม่",
+    "previewSummary": "พบ {total} แถว — ถูกต้อง {valid} แถว, มีข้อผิดพลาด {invalid} แถว",
+    "errorColumn": "ข้อผิดพลาด",
+    "importRows": "นำเข้า {count} แถว",
+    "importing": "กำลังนำเข้า...",
+    "exportErrors": "ส่งออกรายงานข้อผิดพลาด",
+    "importResult": "นำเข้าเสร็จสิ้น: สำเร็จ {success} รายการ, ล้มเหลว {failed} รายการ"
   }
 }

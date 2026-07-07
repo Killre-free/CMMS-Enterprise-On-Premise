@@ -65,6 +65,21 @@ export const machineCreateSchema = z.object({
 
 export const machineUpdateSchema = machineCreateSchema.partial();
 
+// Excel import: departmentName/plantCode (human-readable) instead of
+// departmentId/plantId (opaque ids Excel editors can't be expected to know).
+export const machineImportRowSchema = z.object({
+  machineCode: z.string().min(1, "machineCode is required"),
+  machineName: z.string().min(1, "machineName is required"),
+  manufacturer: z.string().optional(),
+  model: z.string().optional(),
+  serialNumber: z.string().optional(),
+  location: z.string().optional(),
+  criticality: z.string().optional(),
+  departmentName: z.string().optional(),
+  plantCode: z.string().optional(),
+  lifeCycleStatus: z.enum(["Active", "UnderMaintenance", "Retired"]).optional(),
+});
+
 // ── Users ───────────────────────────────────────────────────────────────
 
 export const userCreateSchema = z.object({
@@ -98,6 +113,23 @@ export const userUpdateSchema = z.object({
   password: z.string().min(8).optional(),
 });
 
+// Excel import: departmentName/plantCode/roleName (human-readable) instead of
+// departmentId/plantId/roleId (opaque ids Excel editors can't be expected to know).
+export const userImportRowSchema = z.object({
+  employeeId: z.string().min(1, "employeeId is required"),
+  username: z.string().min(3, "username must be at least 3 characters"),
+  password: z.string().min(8, "password must be at least 8 characters"),
+  firstName: z.string().min(1, "firstName is required"),
+  lastName: z.string().min(1, "lastName is required"),
+  email: z.string().email().optional(),
+  phone: z.string().optional(),
+  position: z.string().optional(),
+  shift: z.string().optional(),
+  departmentName: z.string().optional(),
+  roleName: z.string().min(1, "roleName is required"),
+  plantCode: z.string().optional(),
+});
+
 export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1),
   newPassword: z.string().min(8),
@@ -129,6 +161,18 @@ export const sparePartCreateSchema = z.object({
 });
 
 export const sparePartUpdateSchema = sparePartCreateSchema.partial();
+
+export const sparePartImportRowSchema = z.object({
+  partCode: z.string().min(1, "partCode is required"),
+  partName: z.string().min(1, "partName is required"),
+  unit: z.string().min(1, "unit is required"),
+  currentStock: z.coerce.number().nonnegative().optional(),
+  safetyStock: z.coerce.number().nonnegative(),
+  maxStock: z.coerce.number().nonnegative().optional(),
+  unitCost: z.coerce.number().nonnegative().optional(),
+  category: z.string().optional(),
+  location: z.string().optional(),
+});
 
 export const stockTransactionSchema = z.object({
   sparePartId: z.string().min(1),

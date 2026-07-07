@@ -310,5 +310,18 @@
     "permissionsSaved": "Permissions saved.",
     "saving": "Saving...",
     "savePermissions": "Save Permissions"
+  },
+  "Import": {
+    "importButton": "Import",
+    "downloadTemplate": "Download Template",
+    "chooseFile": "Choose File",
+    "parseFailed": "Could not read the file. Please use the provided template.",
+    "importFailed": "Import failed. Please try again.",
+    "previewSummary": "{total} rows found — {valid} valid, {invalid} with errors.",
+    "errorColumn": "Errors",
+    "importRows": "Import {count, plural, one {# row} other {# rows}}",
+    "importing": "Importing...",
+    "exportErrors": "Export Error Report",
+    "importResult": "Import finished: {success} succeeded, {failed} failed."
   }
 }
