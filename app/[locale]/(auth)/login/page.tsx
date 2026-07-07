@@ -1,8 +1,10 @@
 "use client";
-// app/(auth)/login/page.tsx
+// app/[locale]/(auth)/login/page.tsx
 import { Suspense, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 
 export default function LoginPage() {
   return (
@@ -13,6 +15,7 @@ export default function LoginPage() {
 }
 
 function LoginForm() {
+  const t = useTranslations("Login");
   const router = useRouter();
   const searchParams = useSearchParams();
   const [username, setUsername] = useState("");
@@ -35,11 +38,7 @@ function LoginForm() {
     setLoading(false);
 
     if (!result || result.error) {
-      setError(
-        result?.error === "ACCOUNT_LOCKED"
-          ? "Account is locked. Please contact your administrator."
-          : "Invalid username or password."
-      );
+      setError(result?.error === "ACCOUNT_LOCKED" ? t("accountLocked") : t("invalidCredentials"));
       return;
     }
 
@@ -62,7 +61,7 @@ function LoginForm() {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
             <label htmlFor="username" className="mb-1 block text-sm font-medium">
-              Username
+              {t("username")}
             </label>
             <input
               id="username"
@@ -78,7 +77,7 @@ function LoginForm() {
 
           <div>
             <label htmlFor="password" className="mb-1 block text-sm font-medium">
-              Password
+              {t("password")}
             </label>
             <input
               id="password"
@@ -98,7 +97,7 @@ function LoginForm() {
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
             />
-            Remember me
+            {t("rememberMe")}
           </label>
 
           {error && (
@@ -112,7 +111,7 @@ function LoginForm() {
             disabled={loading}
             className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
           >
-            {loading ? "Signing in..." : "Sign In"}
+            {loading ? t("signingIn") : t("signIn")}
           </button>
         </form>
       </div>

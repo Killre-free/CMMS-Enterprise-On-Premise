@@ -1,0 +1,28 @@
+{
+  "Login": {
+    "username": "ชื่อผู้ใช้",
+    "password": "รหัสผ่าน",
+    "rememberMe": "จดจำฉันไว้",
+    "signIn": "เข้าสู่ระบบ",
+    "signingIn": "กำลังเข้าสู่ระบบ...",
+    "invalidCredentials": "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
+    "accountLocked": "บัญชีถูกล็อก กรุณาติดต่อผู้ดูแลระบบ"
+  },
+  "Nav": {
+    "dashboard": "แดชบอร์ด",
+    "workOrders": "ใบสั่งงาน",
+    "machines": "เครื่องจักร",
+    "pm": "บำรุงรักษาเชิงป้องกัน",
+    "checkSheets": "แบบตรวจเช็ค",
+    "spareParts": "อะไหล่",
+    "reports": "รายงาน",
+    "notifications": "การแจ้งเตือน",
+    "users": "ผู้ใช้งาน",
+    "auditLog": "ประวัติการใช้งาน",
+    "settings": "ตั้งค่าระบบ"
+  },
+  "NotFound": {
+    "description": "ไม่พบหน้าที่คุณกำลังค้นหา",
+    "backToDashboard": "กลับสู่แดชบอร์ด"
+  }
+}

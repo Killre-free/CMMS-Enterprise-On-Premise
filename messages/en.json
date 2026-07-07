@@ -1,0 +1,28 @@
+{
+  "Login": {
+    "username": "Username",
+    "password": "Password",
+    "rememberMe": "Remember me",
+    "signIn": "Sign In",
+    "signingIn": "Signing in...",
+    "invalidCredentials": "Invalid username or password.",
+    "accountLocked": "Account is locked. Please contact your administrator."
+  },
+  "Nav": {
+    "dashboard": "Dashboard",
+    "workOrders": "Work Orders",
+    "machines": "Machines",
+    "pm": "Preventive Maintenance",
+    "checkSheets": "Check Sheets",
+    "spareParts": "Spare Parts",
+    "reports": "Reports",
+    "notifications": "Notifications",
+    "users": "Users",
+    "auditLog": "Audit Log",
+    "settings": "Settings"
+  },
+  "NotFound": {
+    "description": "The page you're looking for doesn't exist.",
+    "backToDashboard": "Back to Dashboard"
+  }
+}

@@ -1,9 +1,9 @@
 "use client";
 // components/shared/DashboardShell.tsx
 import { useState, type ReactNode } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
+import { useLocale, useTranslations } from "next-intl";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import {
   LayoutDashboard,
   ClipboardList,
@@ -20,27 +20,31 @@ import {
   Sun,
   LogOut,
   Menu,
+  Languages,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SessionUser } from "@/types";
 import { NotificationBell } from "@/components/shared/NotificationBell";
 
-const NAV_ITEMS: { href: string; label: string; icon: typeof LayoutDashboard; moduleKey: string }[] = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard, moduleKey: "dashboard" },
-  { href: "/work-orders", label: "Work Orders", icon: ClipboardList, moduleKey: "workOrder" },
-  { href: "/machines", label: "Machines", icon: Cog, moduleKey: "machine" },
-  { href: "/pm", label: "Preventive Maintenance", icon: CalendarCheck, moduleKey: "pm" },
-  { href: "/check-sheets", label: "Check Sheets", icon: ListChecks, moduleKey: "checkSheet" },
-  { href: "/spare-parts", label: "Spare Parts", icon: Package, moduleKey: "sparePart" },
-  { href: "/reports", label: "Reports", icon: FileBarChart, moduleKey: "reports" },
-  { href: "/notifications", label: "Notifications", icon: Bell, moduleKey: "notification" },
-  { href: "/users", label: "Users", icon: Users, moduleKey: "users" },
-  { href: "/audit-log", label: "Audit Log", icon: ScrollText, moduleKey: "auditLog" },
-  { href: "/settings", label: "Settings", icon: SettingsIcon, moduleKey: "settings" },
+const NAV_ITEMS: { href: string; labelKey: string; icon: typeof LayoutDashboard; moduleKey: string }[] = [
+  { href: "/", labelKey: "dashboard", icon: LayoutDashboard, moduleKey: "dashboard" },
+  { href: "/work-orders", labelKey: "workOrders", icon: ClipboardList, moduleKey: "workOrder" },
+  { href: "/machines", labelKey: "machines", icon: Cog, moduleKey: "machine" },
+  { href: "/pm", labelKey: "pm", icon: CalendarCheck, moduleKey: "pm" },
+  { href: "/check-sheets", labelKey: "checkSheets", icon: ListChecks, moduleKey: "checkSheet" },
+  { href: "/spare-parts", labelKey: "spareParts", icon: Package, moduleKey: "sparePart" },
+  { href: "/reports", labelKey: "reports", icon: FileBarChart, moduleKey: "reports" },
+  { href: "/notifications", labelKey: "notifications", icon: Bell, moduleKey: "notification" },
+  { href: "/users", labelKey: "users", icon: Users, moduleKey: "users" },
+  { href: "/audit-log", labelKey: "auditLog", icon: ScrollText, moduleKey: "auditLog" },
+  { href: "/settings", labelKey: "settings", icon: SettingsIcon, moduleKey: "settings" },
 ];
 
 export function DashboardShell({ user, children }: { user: SessionUser; children: ReactNode }) {
+  const t = useTranslations("Nav");
+  const locale = useLocale();
   const pathname = usePathname();
+  const router = useRouter();
   const [dark, setDark] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -50,6 +54,11 @@ export function DashboardShell({ user, children }: { user: SessionUser; children
       document.documentElement.classList.toggle("dark", next);
       return next;
     });
+  }
+
+  function toggleLocale() {
+    const next = locale === "en" ? "th" : "en";
+    router.replace(pathname, { locale: next });
   }
 
   return (
@@ -77,7 +86,7 @@ export function DashboardShell({ user, children }: { user: SessionUser; children
                 )}
               >
                 <Icon size={18} />
-                {item.label}
+                {t(item.labelKey)}
               </Link>
             );
           })}
@@ -96,12 +105,16 @@ export function DashboardShell({ user, children }: { user: SessionUser; children
           <div className="hidden font-medium md:block">CMMS Pro</div>
           <div className="flex items-center gap-3">
             <NotificationBell />
+            <button onClick={toggleLocale} aria-label="Switch language" className="flex items-center gap-1 text-sm">
+              <Languages size={18} />
+              {locale === "en" ? "TH" : "EN"}
+            </button>
             <button onClick={toggleDark} aria-label="Toggle dark mode">
               {dark ? <Sun size={18} /> : <Moon size={18} />}
             </button>
             <span className="text-sm text-muted-foreground">{user.name}</span>
             <button
-              onClick={() => signOut({ callbackUrl: "/login" })}
+              onClick={() => signOut({ callbackUrl: locale === "en" ? "/login" : `/${locale}/login` })}
               aria-label="Sign out"
               className="flex items-center gap-1 text-sm"
             >
