@@ -3,10 +3,27 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { Plus } from "lucide-react";
+import { Plus, FileSpreadsheet } from "lucide-react";
 import { apiGet, apiPost, ApiError, type Page } from "@/lib/api-client";
 import { Badge } from "@/components/shared/Badge";
 import { Modal } from "@/components/shared/Modal";
+import { ImportModal, type ImportColumn } from "@/components/shared/ImportModal";
+import { userImportRowSchema } from "@/lib/validators";
+
+const USER_IMPORT_COLUMNS: ImportColumn[] = [
+  { key: "employeeId", label: "Employee ID", example: "EMP-001" },
+  { key: "username", label: "Username", example: "jsmith" },
+  { key: "password", label: "Password", example: "changeme123" },
+  { key: "firstName", label: "First Name", example: "John" },
+  { key: "lastName", label: "Last Name", example: "Smith" },
+  { key: "email", label: "Email", example: "jsmith@example.com" },
+  { key: "phone", label: "Phone", example: "555-0100" },
+  { key: "position", label: "Position", example: "Technician" },
+  { key: "shift", label: "Shift", example: "Day" },
+  { key: "departmentName", label: "Department Name", example: "Production" },
+  { key: "roleName", label: "Role Name", example: "Technician" },
+  { key: "plantCode", label: "Plant Code", example: "PLT-01" },
+];
 
 interface UserRow {
   id: string;
@@ -113,9 +130,12 @@ function CreateUserForm({ onDone }: { onDone: () => void }) {
 
 export default function UsersPage() {
   const t = useTranslations("Users");
+  const ti = useTranslations("Import");
   const tc = useTranslations("Common");
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const params = new URLSearchParams();
   if (search) params.set("search", search);
@@ -136,6 +156,12 @@ export default function UsersPage() {
           >
             {t("manageRoles")}
           </Link>
+          <button
+            onClick={() => setImportOpen(true)}
+            className="flex items-center gap-1 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-muted"
+          >
+            <FileSpreadsheet size={16} /> {ti("importButton")}
+          </button>
           <button
             onClick={() => setModalOpen(true)}
             className="flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
@@ -204,6 +230,17 @@ export default function UsersPage() {
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={t("newUser")}>
         <CreateUserForm onDone={() => setModalOpen(false)} />
       </Modal>
+
+      <ImportModal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        onImported={() => queryClient.invalidateQueries({ queryKey: ["users"] })}
+        title={`${ti("importButton")} — ${t("title_plural")}`}
+        columns={USER_IMPORT_COLUMNS}
+        schema={userImportRowSchema}
+        importUrl="/api/v1/users/import"
+        templateFileName="users-template.xlsx"
+      />
     </div>
   );
 }
