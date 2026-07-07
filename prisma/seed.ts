@@ -10,14 +10,14 @@ async function main() {
     create: { name: "Admin", description: "Full system access" },
   });
 
-  const passwordHash = await bcrypt.hash("Admin@12345", 12);
+  const passwordHash = await bcrypt.hash("admin123", 12);
 
   await prisma.user.upsert({
-    where: { username: "admin" },
+    where: { username: "admin1" },
     update: {},
     create: {
       employeeId: "EMP-0001",
-      username: "admin",
+      username: "admin1",
       passwordHash,
       firstName: "System",
       lastName: "Administrator",
@@ -28,7 +28,7 @@ async function main() {
     },
   });
 
-  console.log("Seeded: role 'Admin', user 'admin' / 'Admin@12345'");
+  console.log("Seeded: role 'Admin', user 'admin1' / 'admin123'");
 }
 
 main()

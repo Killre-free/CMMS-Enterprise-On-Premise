@@ -18,7 +18,7 @@ enum PermissionAction {
 }
 
 model Role {
-  id          String @id @default(cuid())
+  id          String @id @default(uuid())
   name        String @unique
   description String?
 
@@ -30,7 +30,7 @@ model Role {
 }
 
 model RolePermission {
-  id        String            @id @default(cuid())
+  id        String            @id @default(uuid())
   roleId    String
   role      Role              @relation(fields: [roleId], references: [id], onDelete: Cascade)
   moduleKey String
@@ -40,7 +40,7 @@ model RolePermission {
 }
 
 model UserPermissionOverride {
-  id        String            @id @default(cuid())
+  id        String            @id @default(uuid())
   userId    String
   user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   moduleKey String
@@ -53,7 +53,7 @@ model UserPermissionOverride {
 // ── Org structure ───────────────────────────────────────────────────────
 
 model Plant {
-  id   String @id @default(cuid())
+  id   String @id @default(uuid())
   name String
   code String @unique
 
@@ -65,7 +65,7 @@ model Plant {
 }
 
 model Department {
-  id      String  @id @default(cuid())
+  id      String  @id @default(uuid())
   name    String
   plantId String?
   plant   Plant?  @relation(fields: [plantId], references: [id])
@@ -79,7 +79,7 @@ model Department {
 // ── Users ────────────────────────────────────────────────────────────────
 
 model User {
-  id                  String    @id @default(cuid())
+  id                  String    @id @default(uuid())
   employeeId          String    @unique
   username            String    @unique
   passwordHash        String
@@ -135,7 +135,7 @@ enum MachineLifeCycleStatus {
 }
 
 model Machine {
-  id           String   @id @default(cuid())
+  id           String   @id @default(uuid())
   machineCode  String   @unique
   machineName  String
   manufacturer String?
@@ -189,7 +189,7 @@ enum WorkOrderStatus {
 }
 
 model WorkOrder {
-  id          String            @id @default(cuid())
+  id          String            @id @default(uuid())
   woNumber    String            @unique
   title       String
   description String?
@@ -225,7 +225,7 @@ model WorkOrder {
 }
 
 model WorkOrderStateHistory {
-  id          String           @id @default(cuid())
+  id          String           @id @default(uuid())
   workOrderId String
   workOrder   WorkOrder        @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
   fromStatus  WorkOrderStatus?
@@ -244,7 +244,7 @@ model WorkOrderStateHistory {
 }
 
 model WorkOrderSparePart {
-  id          String  @id @default(cuid())
+  id          String  @id @default(uuid())
   workOrderId String
   workOrder   WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
   sparePartId String
@@ -265,7 +265,7 @@ enum PMFrequencyType {
 }
 
 model PMPlan {
-  id             String          @id @default(cuid())
+  id             String          @id @default(uuid())
   name           String
   description    String?
   machineId      String
@@ -308,7 +308,7 @@ enum CheckSheetSubmissionStatus {
 }
 
 model CheckSheetTemplate {
-  id       String  @id @default(cuid())
+  id       String  @id @default(uuid())
   name     String
   mode     String  @default("Classic")
   version  Int     @default(1)
@@ -325,7 +325,7 @@ model CheckSheetTemplate {
 }
 
 model CheckSheetField {
-  id         String              @id @default(cuid())
+  id         String              @id @default(uuid())
   templateId String
   template   CheckSheetTemplate  @relation(fields: [templateId], references: [id], onDelete: Cascade)
   key        String
@@ -339,7 +339,7 @@ model CheckSheetField {
 }
 
 model CheckSheetSubmission {
-  id              String                     @id @default(cuid())
+  id              String                     @id @default(uuid())
   templateId      String
   template        CheckSheetTemplate         @relation(fields: [templateId], references: [id])
   templateVersion Int
@@ -356,7 +356,7 @@ model CheckSheetSubmission {
 }
 
 model CheckSheetResponse {
-  id           String                @id @default(cuid())
+  id           String                @id @default(uuid())
   submissionId String
   submission   CheckSheetSubmission  @relation(fields: [submissionId], references: [id], onDelete: Cascade)
   fieldId      String
@@ -386,7 +386,7 @@ enum ReorderSuggestionStatus {
 }
 
 model SparePart {
-  id           String  @id @default(cuid())
+  id           String  @id @default(uuid())
   partCode     String  @unique
   partName     String
   unit         String
@@ -411,7 +411,7 @@ model SparePart {
 }
 
 model StockTransaction {
-  id            String               @id @default(cuid())
+  id            String               @id @default(uuid())
   sparePartId   String
   sparePart     SparePart            @relation(fields: [sparePartId], references: [id])
   type          StockTransactionType
@@ -425,7 +425,7 @@ model StockTransaction {
 }
 
 model ReorderSuggestion {
-  id           String                   @id @default(cuid())
+  id           String                   @id @default(uuid())
   sparePartId  String
   sparePart    SparePart                @relation(fields: [sparePartId], references: [id])
   suggestedQty Float
@@ -443,7 +443,7 @@ enum NotificationType {
 }
 
 model Notification {
-  id        String           @id @default(cuid())
+  id        String           @id @default(uuid())
   userId    String
   user      User             @relation(fields: [userId], references: [id])
   title     String
@@ -458,7 +458,7 @@ model Notification {
 }
 
 model AuditLog {
-  id         String   @id @default(cuid())
+  id         String   @id @default(uuid())
   userId     String?
   user       User?    @relation(fields: [userId], references: [id])
   username   String?
@@ -474,7 +474,7 @@ model AuditLog {
 }
 
 model ModuleLicense {
-  id        String    @id @default(cuid())
+  id        String    @id @default(uuid())
   moduleKey String    @unique
   isEnabled Boolean   @default(true)
   expiresAt DateTime?
