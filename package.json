@@ -10,8 +10,8 @@
     "typecheck": "tsc --noEmit",
     "postinstall": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
-    "test": "node --import tsx --test tests/unit/**/*.test.ts",
-    "test:api": "node --import tsx --test tests/api/**/*.test.ts"
+    "test": "node --import tsx --test tests/unit/*.test.ts",
+    "test:api": "node --import tsx --test tests/api/*.test.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
