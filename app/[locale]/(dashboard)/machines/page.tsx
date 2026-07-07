@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { Plus } from "lucide-react";
 import { apiGet, apiPost, ApiError, type Page } from "@/lib/api-client";
 import { Badge } from "@/components/shared/Badge";
@@ -24,6 +25,7 @@ const STATUS_COLOR: Record<string, "gray" | "green" | "yellow" | "red"> = {
 };
 
 function CreateMachineForm({ onDone }: { onDone: () => void }) {
+  const t = useTranslations("Machines");
   const queryClient = useQueryClient();
   const [machineCode, setMachineCode] = useState("");
   const [machineName, setMachineName] = useState("");
@@ -46,7 +48,7 @@ function CreateMachineForm({ onDone }: { onDone: () => void }) {
       queryClient.invalidateQueries({ queryKey: ["machines"] });
       onDone();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to create machine");
+      setError(err instanceof ApiError ? err.message : t("createFailed"));
     } finally {
       setSubmitting(false);
     }
@@ -55,19 +57,19 @@ function CreateMachineForm({ onDone }: { onDone: () => void }) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <div>
-        <label className="mb-1 block text-sm font-medium">Machine Code</label>
+        <label className="mb-1 block text-sm font-medium">{t("machineCode")}</label>
         <input required value={machineCode} onChange={(e) => setMachineCode(e.target.value)} className={inputClass} />
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium">Machine Name</label>
+        <label className="mb-1 block text-sm font-medium">{t("machineName")}</label>
         <input required value={machineName} onChange={(e) => setMachineName(e.target.value)} className={inputClass} />
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium">Manufacturer</label>
+        <label className="mb-1 block text-sm font-medium">{t("manufacturer")}</label>
         <input value={manufacturer} onChange={(e) => setManufacturer(e.target.value)} className={inputClass} />
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium">Location</label>
+        <label className="mb-1 block text-sm font-medium">{t("location")}</label>
         <input value={location} onChange={(e) => setLocation(e.target.value)} className={inputClass} />
       </div>
       {error && <p className="text-sm text-destructive">{error}</p>}
@@ -76,13 +78,15 @@ function CreateMachineForm({ onDone }: { onDone: () => void }) {
         disabled={submitting}
         className="mt-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
       >
-        {submitting ? "Creating..." : "Create Machine"}
+        {submitting ? t("creating") : t("createMachine")}
       </button>
     </form>
   );
 }
 
 export default function MachinesPage() {
+  const t = useTranslations("Machines");
+  const tc = useTranslations("Common");
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -97,17 +101,17 @@ export default function MachinesPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold">Machines</h1>
+        <h1 className="text-xl font-semibold">{t("title_plural")}</h1>
         <button
           onClick={() => setModalOpen(true)}
           className="flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
         >
-          <Plus size={16} /> New Machine
+          <Plus size={16} /> {t("newMachine")}
         </button>
       </div>
 
       <input
-        placeholder="Search by code or name..."
+        placeholder={t("searchPlaceholder")}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className={`${inputClass} max-w-sm`}
@@ -117,32 +121,32 @@ export default function MachinesPage() {
         <table className="w-full text-left text-sm">
           <thead className="border-b border-border bg-muted/50">
             <tr>
-              <th className="p-3 font-medium">Code</th>
-              <th className="p-3 font-medium">Name</th>
-              <th className="p-3 font-medium">Department</th>
-              <th className="p-3 font-medium">Location</th>
-              <th className="p-3 font-medium">Status</th>
+              <th className="p-3 font-medium">{t("code")}</th>
+              <th className="p-3 font-medium">{tc("name")}</th>
+              <th className="p-3 font-medium">{t("department")}</th>
+              <th className="p-3 font-medium">{t("location")}</th>
+              <th className="p-3 font-medium">{tc("status")}</th>
             </tr>
           </thead>
           <tbody>
             {isLoading && (
               <tr>
                 <td colSpan={5} className="p-6 text-center text-muted-foreground">
-                  Loading...
+                  {tc("loading")}
                 </td>
               </tr>
             )}
             {error && (
               <tr>
                 <td colSpan={5} className="p-6 text-center text-destructive">
-                  Failed to load machines.
+                  {t("loadFailed")}
                 </td>
               </tr>
             )}
             {data?.data.length === 0 && (
               <tr>
                 <td colSpan={5} className="p-6 text-center text-muted-foreground">
-                  No machines yet.
+                  {t("noMachinesYet")}
                 </td>
               </tr>
             )}
@@ -165,7 +169,7 @@ export default function MachinesPage() {
         </table>
       </div>
 
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="New Machine">
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={t("newMachine")}>
         <CreateMachineForm onDone={() => setModalOpen(false)} />
       </Modal>
     </div>

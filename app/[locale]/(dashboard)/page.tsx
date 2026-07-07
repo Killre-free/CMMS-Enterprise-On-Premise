@@ -1,6 +1,7 @@
 "use client";
-// app/(dashboard)/page.tsx
+// app/[locale]/(dashboard)/page.tsx
 import { useQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import {
   BarChart,
   Bar,
@@ -69,6 +70,7 @@ function KpiCard({
 }
 
 export default function DashboardPage() {
+  const t = useTranslations("Dashboard");
   const { data, isLoading, error } = useQuery({
     queryKey: ["dashboard"],
     queryFn: fetchDashboard,
@@ -86,7 +88,7 @@ export default function DashboardPage() {
   }
 
   if (error || !data) {
-    return <p className="text-sm text-destructive">Failed to load dashboard data.</p>;
+    return <p className="text-sm text-destructive">{t("loadFailed")}</p>;
   }
 
   const { kpiCards, downtimeChart, woStatusDonut } = data;
@@ -95,14 +97,14 @@ export default function DashboardPage() {
     <div className="flex flex-col gap-4">
       {/* Row 1 — KPI Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        <KpiCard icon={AlertTriangle} label="Breakdowns" value={kpiCards.breakdownCount} danger={kpiCards.breakdownCount > 0} />
-        <KpiCard icon={ClipboardList} label="WO Pending" value={kpiCards.woPendingCount} />
-        <KpiCard icon={CalendarCheck} label="PM Due Today" value={kpiCards.pmDueToday} />
-        <KpiCard icon={Timer} label="MTTR (hrs)" value={kpiCards.mttrHours} />
-        <KpiCard icon={Wallet} label="Budget Used" value={kpiCards.budgetUsedPercent ?? "N/A (Phase 2)"} />
+        <KpiCard icon={AlertTriangle} label={t("breakdowns")} value={kpiCards.breakdownCount} danger={kpiCards.breakdownCount > 0} />
+        <KpiCard icon={ClipboardList} label={t("woPending")} value={kpiCards.woPendingCount} />
+        <KpiCard icon={CalendarCheck} label={t("pmDueToday")} value={kpiCards.pmDueToday} />
+        <KpiCard icon={Timer} label={t("mttrHours")} value={kpiCards.mttrHours} />
+        <KpiCard icon={Wallet} label={t("budgetUsed")} value={kpiCards.budgetUsedPercent ?? t("budgetNotAvailable")} />
         <KpiCard
           icon={PackageX}
-          label="Parts Below Safety"
+          label={t("partsBelowSafety")}
           value={kpiCards.partsBelowSafetyStock}
           danger={kpiCards.partsBelowSafetyStock > 0}
         />
@@ -111,7 +113,7 @@ export default function DashboardPage() {
       {/* Row 2 — Downtime bar chart + WO status donut */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="rounded-lg border border-border bg-background p-4 lg:col-span-2">
-          <h3 className="mb-2 text-sm font-medium">Downtime (last 7 days)</h3>
+          <h3 className="mb-2 text-sm font-medium">{t("downtimeLast7Days")}</h3>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={downtimeChart}>
               <XAxis dataKey="date" fontSize={12} />
@@ -127,7 +129,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="rounded-lg border border-border bg-background p-4">
-          <h3 className="mb-2 text-sm font-medium">Work Order Status</h3>
+          <h3 className="mb-2 text-sm font-medium">{t("workOrderStatus")}</h3>
           <ResponsiveContainer width="100%" height={260}>
             <PieChart>
               <Pie data={woStatusDonut} dataKey="count" nameKey="status" innerRadius={50} outerRadius={80}>

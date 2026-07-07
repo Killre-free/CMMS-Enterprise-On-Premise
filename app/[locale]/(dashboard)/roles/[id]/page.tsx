@@ -1,7 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 import { ArrowLeft } from "lucide-react";
 import { apiGet, ApiError } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
@@ -12,24 +14,42 @@ interface RoleDetail {
   permissions: { moduleKey: string; action: string }[];
 }
 
-const MODULES = [
-  { key: "dashboard", label: "Dashboard" },
-  { key: "workOrder", label: "Work Orders" },
-  { key: "machine", label: "Machines" },
-  { key: "pm", label: "Preventive Maintenance" },
-  { key: "checkSheet", label: "Check Sheets" },
-  { key: "sparePart", label: "Spare Parts" },
-  { key: "reports", label: "Reports" },
-  { key: "users", label: "Users & Roles" },
-  { key: "auditLog", label: "Audit Log" },
-  { key: "settings", label: "Settings" },
-];
+const MODULE_KEYS = [
+  "dashboard",
+  "workOrder",
+  "machine",
+  "pm",
+  "checkSheet",
+  "sparePart",
+  "reports",
+  "users",
+  "auditLog",
+  "settings",
+] as const;
 const ACTIONS = ["view", "add", "edit", "delete"] as const;
 
 export default function RolePermissionsPage() {
+  const t = useTranslations("RoleDetail");
+  const tn = useTranslations("Nav");
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const MODULE_LABEL_KEYS: Record<(typeof MODULE_KEYS)[number], string> = {
+    dashboard: "dashboard",
+    workOrder: "workOrders",
+    machine: "machines",
+    pm: "pm",
+    checkSheet: "checkSheets",
+    sparePart: "spareParts",
+    reports: "reports",
+    users: "users",
+    auditLog: "auditLog",
+    settings: "settings",
+  };
+  const MODULES = MODULE_KEYS.map((key) => ({
+    key,
+    label: key === "users" ? t("usersAndRoles") : tn(MODULE_LABEL_KEYS[key]),
+  }));
 
   const { data: role, isLoading } = useQuery({
     queryKey: ["role", id],
@@ -44,7 +64,7 @@ export default function RolePermissionsPage() {
   useEffect(() => {
     if (role) {
       const next: Record<string, Set<string>> = {};
-      for (const m of MODULES) next[m.key] = new Set();
+      for (const key of MODULE_KEYS) next[key] = new Set();
       for (const p of role.permissions) {
         if (!next[p.moduleKey]) next[p.moduleKey] = new Set();
         next[p.moduleKey].add(p.action);
@@ -54,7 +74,7 @@ export default function RolePermissionsPage() {
   }, [role]);
 
   if (isLoading || !role) {
-    return <p className="text-sm text-muted-foreground">Loading...</p>;
+    return <p className="text-sm text-muted-foreground">{t("loading")}</p>;
   }
 
   function toggle(moduleKey: string, action: string) {
@@ -85,16 +105,23 @@ export default function RolePermissionsPage() {
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        throw new ApiError(res.status, body.title ?? "Failed to save permissions");
+        throw new ApiError(res.status, body.title ?? t("saveFailed"));
       }
       queryClient.invalidateQueries({ queryKey: ["role", id] });
       setSuccess(true);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to save permissions");
+      setError(err instanceof ApiError ? err.message : t("saveFailed"));
     } finally {
       setSubmitting(false);
     }
   }
+
+  const ACTION_LABEL_KEYS: Record<(typeof ACTIONS)[number], string> = {
+    view: "actionView",
+    add: "actionAdd",
+    edit: "actionEdit",
+    delete: "actionDelete",
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -102,19 +129,19 @@ export default function RolePermissionsPage() {
         onClick={() => router.push("/roles")}
         className="flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
-        <ArrowLeft size={16} /> Back to Roles
+        <ArrowLeft size={16} /> {t("backToRoles")}
       </button>
 
-      <h1 className="text-xl font-semibold">{role.name} — Permissions</h1>
+      <h1 className="text-xl font-semibold">{t("permissionsFor", { name: role.name })}</h1>
 
       <div className="overflow-x-auto rounded-lg border border-border">
         <table className="w-full text-left text-sm">
           <thead className="border-b border-border bg-muted/50">
             <tr>
-              <th className="p-3 font-medium">Module</th>
+              <th className="p-3 font-medium">{t("module")}</th>
               {ACTIONS.map((a) => (
                 <th key={a} className="p-3 text-center font-medium capitalize">
-                  {a}
+                  {t(ACTION_LABEL_KEYS[a])}
                 </th>
               ))}
             </tr>
@@ -140,13 +167,13 @@ export default function RolePermissionsPage() {
       </div>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
-      {success && <p className="text-sm text-green-600">Permissions saved.</p>}
+      {success && <p className="text-sm text-green-600">{t("permissionsSaved")}</p>}
       <button
         onClick={handleSave}
         disabled={submitting}
         className="w-fit rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
       >
-        {submitting ? "Saving..." : "Save Permissions"}
+        {submitting ? t("saving") : t("savePermissions")}
       </button>
     </div>
   );

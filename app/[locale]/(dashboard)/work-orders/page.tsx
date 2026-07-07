@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { Plus } from "lucide-react";
 import { apiGet, apiPost, type Page } from "@/lib/api-client";
 import { Badge, PRIORITY_COLOR, STATUS_COLOR } from "@/components/shared/Badge";
@@ -29,6 +30,7 @@ interface Machine {
 const inputClass = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm";
 
 function CreateWorkOrderForm({ onDone }: { onDone: () => void }) {
+  const t = useTranslations("WorkOrders");
   const queryClient = useQueryClient();
   const { data: machines } = useQuery({
     queryKey: ["machines", "options"],
@@ -50,7 +52,7 @@ function CreateWorkOrderForm({ onDone }: { onDone: () => void }) {
       queryClient.invalidateQueries({ queryKey: ["work-orders"] });
       onDone();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create work order");
+      setError(err instanceof Error ? err.message : t("createFailed"));
     } finally {
       setSubmitting(false);
     }
@@ -59,11 +61,11 @@ function CreateWorkOrderForm({ onDone }: { onDone: () => void }) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <div>
-        <label className="mb-1 block text-sm font-medium">Title</label>
+        <label className="mb-1 block text-sm font-medium">{t("title")}</label>
         <input required value={title} onChange={(e) => setTitle(e.target.value)} className={inputClass} />
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium">Description</label>
+        <label className="mb-1 block text-sm font-medium">{t("description")}</label>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
@@ -72,9 +74,9 @@ function CreateWorkOrderForm({ onDone }: { onDone: () => void }) {
         />
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium">Machine</label>
+        <label className="mb-1 block text-sm font-medium">{t("machine")}</label>
         <select required value={machineId} onChange={(e) => setMachineId(e.target.value)} className={inputClass}>
-          <option value="">Select a machine...</option>
+          <option value="">{t("selectMachine")}</option>
           {machines?.data.map((m) => (
             <option key={m.id} value={m.id}>
               {m.machineCode} — {m.machineName}
@@ -83,7 +85,7 @@ function CreateWorkOrderForm({ onDone }: { onDone: () => void }) {
         </select>
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium">Priority</label>
+        <label className="mb-1 block text-sm font-medium">{t("priority")}</label>
         <select value={priority} onChange={(e) => setPriority(e.target.value)} className={inputClass}>
           {["Low", "Medium", "High", "Critical"].map((p) => (
             <option key={p} value={p}>
@@ -98,13 +100,15 @@ function CreateWorkOrderForm({ onDone }: { onDone: () => void }) {
         disabled={submitting}
         className="mt-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
       >
-        {submitting ? "Creating..." : "Create Work Order"}
+        {submitting ? t("creating") : t("createWorkOrder")}
       </button>
     </form>
   );
 }
 
 export default function WorkOrdersPage() {
+  const t = useTranslations("WorkOrders");
+  const tc = useTranslations("Common");
   const [status, setStatus] = useState("");
   const [priority, setPriority] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
@@ -121,18 +125,18 @@ export default function WorkOrdersPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold">Work Orders</h1>
+        <h1 className="text-xl font-semibold">{t("title_plural")}</h1>
         <button
           onClick={() => setModalOpen(true)}
           className="flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
         >
-          <Plus size={16} /> New Work Order
+          <Plus size={16} /> {t("newWorkOrder")}
         </button>
       </div>
 
       <div className="flex flex-wrap gap-2">
         <select value={status} onChange={(e) => setStatus(e.target.value)} className={`${inputClass} w-auto`}>
-          <option value="">All statuses</option>
+          <option value="">{t("allStatuses")}</option>
           {Object.keys(STATUS_COLOR).map((s) => (
             <option key={s} value={s}>
               {s}
@@ -140,7 +144,7 @@ export default function WorkOrdersPage() {
           ))}
         </select>
         <select value={priority} onChange={(e) => setPriority(e.target.value)} className={`${inputClass} w-auto`}>
-          <option value="">All priorities</option>
+          <option value="">{t("allPriorities")}</option>
           {Object.keys(PRIORITY_COLOR).map((p) => (
             <option key={p} value={p}>
               {p}
@@ -153,34 +157,34 @@ export default function WorkOrdersPage() {
         <table className="w-full text-left text-sm">
           <thead className="border-b border-border bg-muted/50">
             <tr>
-              <th className="p-3 font-medium">WO #</th>
-              <th className="p-3 font-medium">Title</th>
-              <th className="p-3 font-medium">Machine</th>
-              <th className="p-3 font-medium">Priority</th>
-              <th className="p-3 font-medium">Status</th>
-              <th className="p-3 font-medium">Assigned To</th>
-              <th className="p-3 font-medium">Created</th>
+              <th className="p-3 font-medium">{t("woNumber")}</th>
+              <th className="p-3 font-medium">{t("title")}</th>
+              <th className="p-3 font-medium">{t("machine")}</th>
+              <th className="p-3 font-medium">{t("priority")}</th>
+              <th className="p-3 font-medium">{tc("status")}</th>
+              <th className="p-3 font-medium">{t("assignedTo")}</th>
+              <th className="p-3 font-medium">{tc("created")}</th>
             </tr>
           </thead>
           <tbody>
             {isLoading && (
               <tr>
                 <td colSpan={7} className="p-6 text-center text-muted-foreground">
-                  Loading...
+                  {tc("loading")}
                 </td>
               </tr>
             )}
             {error && (
               <tr>
                 <td colSpan={7} className="p-6 text-center text-destructive">
-                  Failed to load work orders.
+                  {t("loadFailed")}
                 </td>
               </tr>
             )}
             {data?.data.length === 0 && (
               <tr>
                 <td colSpan={7} className="p-6 text-center text-muted-foreground">
-                  No work orders yet.
+                  {t("noWorkOrdersYet")}
                 </td>
               </tr>
             )}
@@ -209,7 +213,7 @@ export default function WorkOrdersPage() {
         </table>
       </div>
 
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="New Work Order">
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={t("newWorkOrder")}>
         <CreateWorkOrderForm onDone={() => setModalOpen(false)} />
       </Modal>
     </div>

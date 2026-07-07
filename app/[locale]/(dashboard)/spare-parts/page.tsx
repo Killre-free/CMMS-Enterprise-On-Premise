@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { Plus } from "lucide-react";
 import { apiGet, apiPost, ApiError, type Page } from "@/lib/api-client";
 import { Badge } from "@/components/shared/Badge";
@@ -19,6 +20,7 @@ interface SparePart {
 const inputClass = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm";
 
 function CreateSparePartForm({ onDone }: { onDone: () => void }) {
+  const t = useTranslations("SpareParts");
   const queryClient = useQueryClient();
   const [partCode, setPartCode] = useState("");
   const [partName, setPartName] = useState("");
@@ -41,7 +43,7 @@ function CreateSparePartForm({ onDone }: { onDone: () => void }) {
       queryClient.invalidateQueries({ queryKey: ["spare-parts"] });
       onDone();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to create spare part");
+      setError(err instanceof ApiError ? err.message : t("createFailed"));
     } finally {
       setSubmitting(false);
     }
@@ -50,19 +52,19 @@ function CreateSparePartForm({ onDone }: { onDone: () => void }) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <div>
-        <label className="mb-1 block text-sm font-medium">Part Code</label>
+        <label className="mb-1 block text-sm font-medium">{t("partCode")}</label>
         <input required value={partCode} onChange={(e) => setPartCode(e.target.value)} className={inputClass} />
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium">Part Name</label>
+        <label className="mb-1 block text-sm font-medium">{t("partName")}</label>
         <input required value={partName} onChange={(e) => setPartName(e.target.value)} className={inputClass} />
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium">Unit</label>
+        <label className="mb-1 block text-sm font-medium">{t("unit")}</label>
         <input required value={unit} onChange={(e) => setUnit(e.target.value)} className={inputClass} />
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium">Safety Stock</label>
+        <label className="mb-1 block text-sm font-medium">{t("safetyStock")}</label>
         <input
           type="number"
           value={safetyStock}
@@ -76,13 +78,15 @@ function CreateSparePartForm({ onDone }: { onDone: () => void }) {
         disabled={submitting}
         className="mt-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
       >
-        {submitting ? "Creating..." : "Create Spare Part"}
+        {submitting ? t("creating") : t("createSparePart")}
       </button>
     </form>
   );
 }
 
 export default function SparePartsPage() {
+  const t = useTranslations("SpareParts");
+  const tc = useTranslations("Common");
   const [search, setSearch] = useState("");
   const [belowSafety, setBelowSafety] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -99,25 +103,25 @@ export default function SparePartsPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold">Spare Parts</h1>
+        <h1 className="text-xl font-semibold">{t("title_plural")}</h1>
         <button
           onClick={() => setModalOpen(true)}
           className="flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
         >
-          <Plus size={16} /> New Spare Part
+          <Plus size={16} /> {t("newSparePart")}
         </button>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
         <input
-          placeholder="Search by code or name..."
+          placeholder={t("searchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className={`${inputClass} max-w-sm`}
         />
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={belowSafety} onChange={(e) => setBelowSafety(e.target.checked)} />
-          Below safety stock only
+          {t("belowSafetyOnly")}
         </label>
       </div>
 
@@ -125,11 +129,11 @@ export default function SparePartsPage() {
         <table className="w-full text-left text-sm">
           <thead className="border-b border-border bg-muted/50">
             <tr>
-              <th className="p-3 font-medium">Code</th>
-              <th className="p-3 font-medium">Name</th>
-              <th className="p-3 font-medium">Current Stock</th>
-              <th className="p-3 font-medium">Safety Stock</th>
-              <th className="p-3 font-medium">Unit</th>
+              <th className="p-3 font-medium">{t("code")}</th>
+              <th className="p-3 font-medium">{tc("name")}</th>
+              <th className="p-3 font-medium">{t("currentStock")}</th>
+              <th className="p-3 font-medium">{t("safetyStock")}</th>
+              <th className="p-3 font-medium">{t("unit")}</th>
               <th className="p-3 font-medium"></th>
             </tr>
           </thead>
@@ -137,21 +141,21 @@ export default function SparePartsPage() {
             {isLoading && (
               <tr>
                 <td colSpan={6} className="p-6 text-center text-muted-foreground">
-                  Loading...
+                  {tc("loading")}
                 </td>
               </tr>
             )}
             {error && (
               <tr>
                 <td colSpan={6} className="p-6 text-center text-destructive">
-                  Failed to load spare parts.
+                  {t("loadFailed")}
                 </td>
               </tr>
             )}
             {data?.data.length === 0 && (
               <tr>
                 <td colSpan={6} className="p-6 text-center text-muted-foreground">
-                  No spare parts yet.
+                  {t("noSparePartsYet")}
                 </td>
               </tr>
             )}
@@ -167,7 +171,7 @@ export default function SparePartsPage() {
                 <td className="p-3">{p.safetyStock}</td>
                 <td className="p-3">{p.unit}</td>
                 <td className="p-3">
-                  {p.currentStock < p.safetyStock && <Badge color="red">Below safety</Badge>}
+                  {p.currentStock < p.safetyStock && <Badge color="red">{t("belowSafety")}</Badge>}
                 </td>
               </tr>
             ))}
@@ -175,7 +179,7 @@ export default function SparePartsPage() {
         </table>
       </div>
 
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="New Spare Part">
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={t("newSparePart")}>
         <CreateSparePartForm onDone={() => setModalOpen(false)} />
       </Modal>
     </div>

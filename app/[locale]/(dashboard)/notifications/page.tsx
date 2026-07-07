@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { CheckCheck } from "lucide-react";
 import { apiGet, apiPost, apiPatch, type Page } from "@/lib/api-client";
 import { Badge, NOTIFICATION_TYPE_COLOR } from "@/components/shared/Badge";
@@ -21,6 +22,7 @@ interface NotificationItem {
 const inputClass = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm";
 
 export default function NotificationsPage() {
+  const t = useTranslations("Notifications");
   const [page, setPage] = useState(1);
   const [module, setModule] = useState("");
   const [unreadOnly, setUnreadOnly] = useState(false);
@@ -49,10 +51,10 @@ export default function NotificationsPage() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-xl font-semibold">
-          Notifications
+          {t("title")}
           {Boolean(data?.unreadCount) && (
             <span className="ml-2 text-sm font-normal text-muted-foreground">
-              ({data!.unreadCount} unread)
+              ({data!.unreadCount} {t("unread")})
             </span>
           )}
         </h1>
@@ -60,7 +62,7 @@ export default function NotificationsPage() {
           onClick={markAllRead}
           className="flex items-center gap-1 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-muted"
         >
-          <CheckCheck size={16} /> Mark all as read
+          <CheckCheck size={16} /> {t("markAllAsRead")}
         </button>
       </div>
 
@@ -73,7 +75,7 @@ export default function NotificationsPage() {
           }}
           className={`${inputClass} w-auto`}
         >
-          <option value="">All modules</option>
+          <option value="">{t("allModules")}</option>
           {["workOrder", "pm", "machine", "sparePart", "checkSheet", "users"].map((m) => (
             <option key={m} value={m}>
               {m}
@@ -89,15 +91,15 @@ export default function NotificationsPage() {
               setUnreadOnly(e.target.checked);
             }}
           />
-          Unread only
+          {t("unreadOnly")}
         </label>
       </div>
 
       <div className="rounded-lg border border-border">
-        {isLoading && <div className="p-6 text-center text-muted-foreground">Loading...</div>}
-        {error && <div className="p-6 text-center text-destructive">Failed to load notifications.</div>}
+        {isLoading && <div className="p-6 text-center text-muted-foreground">{t("loading")}</div>}
+        {error && <div className="p-6 text-center text-destructive">{t("loadFailed")}</div>}
         {data?.data.length === 0 && (
-          <div className="p-6 text-center text-muted-foreground">No notifications.</div>
+          <div className="p-6 text-center text-muted-foreground">{t("noNotifications")}</div>
         )}
         {data?.data.map((n) => (
           <Link
@@ -128,17 +130,17 @@ export default function NotificationsPage() {
             onClick={() => setPage((p) => p - 1)}
             className="rounded-md border border-border px-3 py-1 disabled:opacity-50"
           >
-            Previous
+            {t("previous")}
           </button>
           <span className="text-muted-foreground">
-            Page {data.page} of {data.totalPages}
+            {t("pageOf", { page: data.page, totalPages: data.totalPages })}
           </span>
           <button
             disabled={page >= data.totalPages}
             onClick={() => setPage((p) => p + 1)}
             className="rounded-md border border-border px-3 py-1 disabled:opacity-50"
           >
-            Next
+            {t("next")}
           </button>
         </div>
       )}

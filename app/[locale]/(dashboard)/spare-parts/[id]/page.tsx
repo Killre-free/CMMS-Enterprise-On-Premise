@@ -1,7 +1,9 @@
 "use client";
 import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 import { ArrowLeft } from "lucide-react";
 import { apiGet, apiPost, ApiError } from "@/lib/api-client";
 import { formatDate } from "@/lib/utils";
@@ -26,6 +28,7 @@ const inputClass = "w-full rounded-md border border-border bg-background px-3 py
 const TX_TYPES = ["Receive", "Issue", "Return", "Adjustment"];
 
 export default function SparePartDetailPage() {
+  const tr = useTranslations("SparePartDetail");
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -41,7 +44,7 @@ export default function SparePartDetailPage() {
   });
 
   if (isLoading || !part) {
-    return <p className="text-sm text-muted-foreground">Loading...</p>;
+    return <p className="text-sm text-muted-foreground">{tr("loading")}</p>;
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -53,7 +56,7 @@ export default function SparePartDetailPage() {
       setQuantity("");
       queryClient.invalidateQueries({ queryKey: ["spare-part", id] });
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to record stock transaction");
+      setError(err instanceof ApiError ? err.message : tr("recordFailed"));
     } finally {
       setSubmitting(false);
     }
@@ -65,7 +68,7 @@ export default function SparePartDetailPage() {
         onClick={() => router.push("/spare-parts")}
         className="flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
-        <ArrowLeft size={16} /> Back to Spare Parts
+        <ArrowLeft size={16} /> {tr("backToSpareParts")}
       </button>
 
       <h1 className="text-xl font-semibold">
@@ -76,30 +79,30 @@ export default function SparePartDetailPage() {
         <div className="flex flex-col gap-4 lg:col-span-2">
           <div className="rounded-lg border border-border bg-background p-4">
             <dl className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
-              <dt className="text-muted-foreground">Current Stock</dt>
+              <dt className="text-muted-foreground">{tr("currentStock")}</dt>
               <dd className="sm:col-span-2">
                 {part.currentStock} {part.unit}
               </dd>
-              <dt className="text-muted-foreground">Safety Stock</dt>
+              <dt className="text-muted-foreground">{tr("safetyStock")}</dt>
               <dd className="sm:col-span-2">
                 {part.safetyStock} {part.unit}
               </dd>
-              <dt className="text-muted-foreground">Unit Cost</dt>
+              <dt className="text-muted-foreground">{tr("unitCost")}</dt>
               <dd className="sm:col-span-2">{part.unitCost ?? "—"}</dd>
             </dl>
           </div>
 
           <div className="rounded-lg border border-border bg-background p-4">
-            <h2 className="mb-2 text-sm font-medium">Stock Card</h2>
+            <h2 className="mb-2 text-sm font-medium">{tr("stockCard")}</h2>
             {part.transactions.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No transactions yet.</p>
+              <p className="text-sm text-muted-foreground">{tr("noTransactionsYet")}</p>
             ) : (
               <table className="w-full text-left text-sm">
                 <thead className="border-b border-border">
                   <tr>
-                    <th className="py-2 font-medium">Type</th>
-                    <th className="py-2 font-medium">Quantity</th>
-                    <th className="py-2 font-medium">Date</th>
+                    <th className="py-2 font-medium">{tr("type")}</th>
+                    <th className="py-2 font-medium">{tr("quantity")}</th>
+                    <th className="py-2 font-medium">{tr("date")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -117,7 +120,7 @@ export default function SparePartDetailPage() {
         </div>
 
         <div className="rounded-lg border border-border bg-background p-4">
-          <h2 className="mb-2 text-sm font-medium">Record Stock Transaction</h2>
+          <h2 className="mb-2 text-sm font-medium">{tr("recordStockTransaction")}</h2>
           <form onSubmit={handleSubmit} className="flex flex-col gap-3">
             <select value={type} onChange={(e) => setType(e.target.value)} className={inputClass}>
               {TX_TYPES.map((t) => (
@@ -131,7 +134,7 @@ export default function SparePartDetailPage() {
               required
               min="0.01"
               step="0.01"
-              placeholder="Quantity"
+              placeholder={tr("quantity")}
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
               className={inputClass}
@@ -142,7 +145,7 @@ export default function SparePartDetailPage() {
               disabled={submitting}
               className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
             >
-              {submitting ? "Saving..." : "Record Transaction"}
+              {submitting ? tr("saving") : tr("recordTransaction")}
             </button>
           </form>
         </div>

@@ -1,7 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 import { ArrowLeft } from "lucide-react";
 import { apiGet, apiPatch, ApiError } from "@/lib/api-client";
 
@@ -26,6 +28,7 @@ interface Role {
 const inputClass = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm";
 
 export default function UserDetailPage() {
+  const t = useTranslations("UserDetail");
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -61,7 +64,7 @@ export default function UserDetailPage() {
   }, [user]);
 
   if (isLoading || !user) {
-    return <p className="text-sm text-muted-foreground">Loading...</p>;
+    return <p className="text-sm text-muted-foreground">{t("loading")}</p>;
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -82,7 +85,7 @@ export default function UserDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       setSuccess(true);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to update user");
+      setError(err instanceof ApiError ? err.message : t("updateFailed"));
     } finally {
       setSubmitting(false);
     }
@@ -94,7 +97,7 @@ export default function UserDetailPage() {
         onClick={() => router.push("/users")}
         className="flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
-        <ArrowLeft size={16} /> Back to Users
+        <ArrowLeft size={16} /> {t("backToUsers")}
       </button>
 
       <h1 className="text-xl font-semibold">
@@ -105,24 +108,24 @@ export default function UserDetailPage() {
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-sm font-medium">First Name</label>
+              <label className="mb-1 block text-sm font-medium">{t("firstName")}</label>
               <input value={firstName} onChange={(e) => setFirstName(e.target.value)} className={inputClass} />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium">Last Name</label>
+              <label className="mb-1 block text-sm font-medium">{t("lastName")}</label>
               <input value={lastName} onChange={(e) => setLastName(e.target.value)} className={inputClass} />
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Email</label>
+            <label className="mb-1 block text-sm font-medium">{t("email")}</label>
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Phone</label>
+            <label className="mb-1 block text-sm font-medium">{t("phone")}</label>
             <input value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Role</label>
+            <label className="mb-1 block text-sm font-medium">{t("role")}</label>
             <select
               value={roleId}
               onChange={(e) => setRoleId(e.target.value)}
@@ -143,21 +146,19 @@ export default function UserDetailPage() {
               disabled={user.isSuperAdmin}
               onChange={(e) => setIsActive(e.target.checked)}
             />
-            Active
+            {t("active")}
           </label>
           {user.isSuperAdmin && (
-            <p className="text-xs text-muted-foreground">
-              This is the seeded Super Admin account — role and active status can&apos;t be changed here.
-            </p>
+            <p className="text-xs text-muted-foreground">{t("superAdminNotice")}</p>
           )}
           {error && <p className="text-sm text-destructive">{error}</p>}
-          {success && <p className="text-sm text-green-600">Saved.</p>}
+          {success && <p className="text-sm text-green-600">{t("saved")}</p>}
           <button
             type="submit"
             disabled={submitting}
             className="mt-2 w-fit rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
           >
-            {submitting ? "Saving..." : "Save Changes"}
+            {submitting ? t("saving") : t("saveChanges")}
           </button>
         </form>
       </div>

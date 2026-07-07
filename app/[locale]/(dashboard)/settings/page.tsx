@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { apiGet, apiPatch, ApiError } from "@/lib/api-client";
 
 interface SystemSettings {
@@ -19,6 +20,7 @@ const LANGUAGES = [
 ];
 
 export default function SettingsPage() {
+  const t = useTranslations("Settings");
   const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ["settings"],
@@ -43,7 +45,7 @@ export default function SettingsPage() {
   }, [data]);
 
   if (isLoading) {
-    return <p className="text-sm text-muted-foreground">Loading...</p>;
+    return <p className="text-sm text-muted-foreground">{t("loading")}</p>;
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -61,7 +63,7 @@ export default function SettingsPage() {
       queryClient.invalidateQueries({ queryKey: ["settings"] });
       setSuccess(true);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to save settings");
+      setError(err instanceof ApiError ? err.message : t("saveFailed"));
     } finally {
       setSubmitting(false);
     }
@@ -69,30 +71,30 @@ export default function SettingsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-semibold">Settings</h1>
+      <h1 className="text-xl font-semibold">{t("title")}</h1>
 
       <div className="max-w-lg rounded-lg border border-border bg-background p-4">
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <div>
-            <label className="mb-1 block text-sm font-medium">Company Name</label>
+            <label className="mb-1 block text-sm font-medium">{t("companyName")}</label>
             <input value={companyName} onChange={(e) => setCompanyName(e.target.value)} className={inputClass} />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Logo URL</label>
+            <label className="mb-1 block text-sm font-medium">{t("logoUrl")}</label>
             <input value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} className={inputClass} />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Timezone</label>
+            <label className="mb-1 block text-sm font-medium">{t("timezone")}</label>
             <select value={timezone} onChange={(e) => setTimezone(e.target.value)} className={inputClass}>
-              {TIMEZONES.map((t) => (
-                <option key={t} value={t}>
-                  {t}
+              {TIMEZONES.map((tz) => (
+                <option key={tz} value={tz}>
+                  {tz}
                 </option>
               ))}
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Language</label>
+            <label className="mb-1 block text-sm font-medium">{t("defaultLanguage")}</label>
             <select value={language} onChange={(e) => setLanguage(e.target.value)} className={inputClass}>
               {LANGUAGES.map((l) => (
                 <option key={l.value} value={l.value}>
@@ -102,13 +104,13 @@ export default function SettingsPage() {
             </select>
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
-          {success && <p className="text-sm text-green-600">Saved.</p>}
+          {success && <p className="text-sm text-green-600">{t("saved")}</p>}
           <button
             type="submit"
             disabled={submitting}
             className="mt-2 w-fit rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
           >
-            {submitting ? "Saving..." : "Save Settings"}
+            {submitting ? t("saving") : t("saveSettings")}
           </button>
         </form>
       </div>

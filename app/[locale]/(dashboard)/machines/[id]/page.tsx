@@ -1,7 +1,8 @@
 "use client";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link, useRouter } from "@/i18n/navigation";
 import { ArrowLeft } from "lucide-react";
 import { apiGet } from "@/lib/api-client";
 import { Badge, PRIORITY_COLOR, STATUS_COLOR } from "@/components/shared/Badge";
@@ -28,6 +29,7 @@ interface MachineDetail {
 }
 
 export default function MachineDetailPage() {
+  const t = useTranslations("MachineDetail");
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
 
@@ -37,7 +39,7 @@ export default function MachineDetailPage() {
   });
 
   if (isLoading || !machine) {
-    return <p className="text-sm text-muted-foreground">Loading...</p>;
+    return <p className="text-sm text-muted-foreground">{t("loading")}</p>;
   }
 
   return (
@@ -46,7 +48,7 @@ export default function MachineDetailPage() {
         onClick={() => router.push("/machines")}
         className="flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
-        <ArrowLeft size={16} /> Back to Machines
+        <ArrowLeft size={16} /> {t("backToMachines")}
       </button>
 
       <div>
@@ -58,28 +60,28 @@ export default function MachineDetailPage() {
 
       <div className="rounded-lg border border-border bg-background p-4">
         <dl className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
-          <dt className="text-muted-foreground">Manufacturer</dt>
+          <dt className="text-muted-foreground">{t("manufacturer")}</dt>
           <dd>{machine.manufacturer ?? "—"}</dd>
-          <dt className="text-muted-foreground">Model</dt>
+          <dt className="text-muted-foreground">{t("model")}</dt>
           <dd>{machine.model ?? "—"}</dd>
-          <dt className="text-muted-foreground">Location</dt>
+          <dt className="text-muted-foreground">{t("location")}</dt>
           <dd>{machine.location ?? "—"}</dd>
-          <dt className="text-muted-foreground">Status</dt>
+          <dt className="text-muted-foreground">{t("status")}</dt>
           <dd>{machine.lifeCycleStatus}</dd>
         </dl>
       </div>
 
       <div className="rounded-lg border border-border bg-background p-4">
-        <h2 className="mb-2 text-sm font-medium">Preventive Maintenance Plans</h2>
+        <h2 className="mb-2 text-sm font-medium">{t("pmPlans")}</h2>
         {machine.pmPlans.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No PM plans linked to this machine.</p>
+          <p className="text-sm text-muted-foreground">{t("noPmPlans")}</p>
         ) : (
           <ul className="flex flex-col gap-2 text-sm">
             {machine.pmPlans.map((p) => (
               <li key={p.id} className="flex justify-between border-b border-border pb-2 last:border-0">
                 <span>{p.name}</span>
                 <span className="text-muted-foreground">
-                  {p.nextDueAt ? `Due ${formatDate(p.nextDueAt)}` : "No due date"}
+                  {p.nextDueAt ? t("due", { date: formatDate(p.nextDueAt) }) : t("noDueDate")}
                 </span>
               </li>
             ))}
@@ -88,9 +90,9 @@ export default function MachineDetailPage() {
       </div>
 
       <div className="rounded-lg border border-border bg-background p-4">
-        <h2 className="mb-2 text-sm font-medium">Recent Work Orders</h2>
+        <h2 className="mb-2 text-sm font-medium">{t("recentWorkOrders")}</h2>
         {machine.workOrders.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No work orders for this machine yet.</p>
+          <p className="text-sm text-muted-foreground">{t("noWorkOrders")}</p>
         ) : (
           <ul className="flex flex-col gap-2 text-sm">
             {machine.workOrders.map((wo) => (

@@ -1,6 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { utils, writeFile } from "xlsx";
 import { Download, Printer } from "lucide-react";
 import { apiGet, type Page } from "@/lib/api-client";
@@ -16,40 +17,44 @@ interface Column<T> {
   value: (row: T) => string | number;
 }
 
-const WORK_ORDER_COLUMNS: Column<any>[] = [
-  { key: "woNumber", label: "WO #", value: (r) => r.woNumber },
-  { key: "title", label: "Title", value: (r) => r.title },
-  { key: "machine", label: "Machine", value: (r) => r.machine?.machineName ?? "" },
-  { key: "priority", label: "Priority", value: (r) => r.priority },
-  { key: "status", label: "Status", value: (r) => r.status },
-  {
-    key: "assignedTo",
-    label: "Assigned To",
-    value: (r) => (r.assignedTo ? `${r.assignedTo.firstName} ${r.assignedTo.lastName}` : ""),
-  },
-  { key: "createdAt", label: "Created", value: (r) => formatDate(r.createdAt) },
-];
+function buildReportConfig(
+  t: ReturnType<typeof useTranslations<"Reports">>
+): Record<ReportType, { label: string; endpoint: string; columns: Column<any>[] }> {
+  const workOrderColumns: Column<any>[] = [
+    { key: "woNumber", label: t("woNumber"), value: (r) => r.woNumber },
+    { key: "title", label: t("title_field"), value: (r) => r.title },
+    { key: "machine", label: t("machine"), value: (r) => r.machine?.machineName ?? "" },
+    { key: "priority", label: t("priority"), value: (r) => r.priority },
+    { key: "status", label: t("status"), value: (r) => r.status },
+    {
+      key: "assignedTo",
+      label: t("assignedTo"),
+      value: (r) => (r.assignedTo ? `${r.assignedTo.firstName} ${r.assignedTo.lastName}` : ""),
+    },
+    { key: "createdAt", label: t("created"), value: (r) => formatDate(r.createdAt) },
+  ];
 
-const SPARE_PART_COLUMNS: Column<any>[] = [
-  { key: "partCode", label: "Part Code", value: (r) => r.partCode },
-  { key: "partName", label: "Part Name", value: (r) => r.partName },
-  { key: "currentStock", label: "Current Stock", value: (r) => r.currentStock },
-  { key: "safetyStock", label: "Safety Stock", value: (r) => r.safetyStock },
-  { key: "unit", label: "Unit", value: (r) => r.unit },
-];
+  const sparePartColumns: Column<any>[] = [
+    { key: "partCode", label: t("partCode"), value: (r) => r.partCode },
+    { key: "partName", label: t("partName"), value: (r) => r.partName },
+    { key: "currentStock", label: t("currentStock"), value: (r) => r.currentStock },
+    { key: "safetyStock", label: t("safetyStock"), value: (r) => r.safetyStock },
+    { key: "unit", label: t("unit"), value: (r) => r.unit },
+  ];
 
-const MACHINE_COLUMNS: Column<any>[] = [
-  { key: "machineCode", label: "Code", value: (r) => r.machineCode },
-  { key: "machineName", label: "Name", value: (r) => r.machineName },
-  { key: "department", label: "Department", value: (r) => r.department?.name ?? "" },
-  { key: "lifeCycleStatus", label: "Status", value: (r) => r.lifeCycleStatus },
-];
+  const machineColumns: Column<any>[] = [
+    { key: "machineCode", label: t("code"), value: (r) => r.machineCode },
+    { key: "machineName", label: t("name"), value: (r) => r.machineName },
+    { key: "department", label: t("department"), value: (r) => r.department?.name ?? "" },
+    { key: "lifeCycleStatus", label: t("status"), value: (r) => r.lifeCycleStatus },
+  ];
 
-const REPORT_CONFIG: Record<ReportType, { label: string; endpoint: string; columns: Column<any>[] }> = {
-  workOrders: { label: "Work Orders", endpoint: "/api/v1/work-orders", columns: WORK_ORDER_COLUMNS },
-  spareParts: { label: "Spare Parts Stock", endpoint: "/api/v1/spare-parts", columns: SPARE_PART_COLUMNS },
-  machines: { label: "Machines", endpoint: "/api/v1/machines", columns: MACHINE_COLUMNS },
-};
+  return {
+    workOrders: { label: t("workOrders"), endpoint: "/api/v1/work-orders", columns: workOrderColumns },
+    spareParts: { label: t("sparePartsStock"), endpoint: "/api/v1/spare-parts", columns: sparePartColumns },
+    machines: { label: t("machines"), endpoint: "/api/v1/machines", columns: machineColumns },
+  };
+}
 
 function toCsv(columns: Column<any>[], rows: any[]): string {
   const header = columns.map((c) => `"${c.label}"`).join(",");
@@ -70,7 +75,10 @@ function downloadBlob(content: string, filename: string, mime: string) {
 }
 
 export default function ReportsPage() {
+  const t = useTranslations("Reports");
+  const tc = useTranslations("Common");
   const [reportType, setReportType] = useState<ReportType>("workOrders");
+  const REPORT_CONFIG = useMemo(() => buildReportConfig(t), [t]);
   const config = REPORT_CONFIG[reportType];
 
   const { data, isLoading, error } = useQuery({
@@ -99,7 +107,7 @@ export default function ReportsPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2 print:hidden">
-        <h1 className="text-xl font-semibold">Reports</h1>
+        <h1 className="text-xl font-semibold">{t("title")}</h1>
         <div className="flex flex-wrap gap-2">
           <button
             onClick={exportCsv}
@@ -117,7 +125,7 @@ export default function ReportsPage() {
             onClick={() => window.print()}
             className="flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
           >
-            <Printer size={16} /> Print / PDF
+            <Printer size={16} /> {t("printPdf")}
           </button>
         </div>
       </div>
@@ -134,7 +142,7 @@ export default function ReportsPage() {
         ))}
       </select>
 
-      <h2 className="hidden text-lg font-semibold print:block">{config.label} Report</h2>
+      <h2 className="hidden text-lg font-semibold print:block">{t("reportSuffix", { label: config.label })}</h2>
 
       <div className="overflow-x-auto rounded-lg border border-border">
         <table className="w-full text-left text-sm">
@@ -151,21 +159,21 @@ export default function ReportsPage() {
             {isLoading && (
               <tr>
                 <td colSpan={config.columns.length} className="p-6 text-center text-muted-foreground">
-                  Loading...
+                  {tc("loading")}
                 </td>
               </tr>
             )}
             {error && (
               <tr>
                 <td colSpan={config.columns.length} className="p-6 text-center text-destructive">
-                  Failed to load report data.
+                  {t("loadFailed")}
                 </td>
               </tr>
             )}
             {rows.length === 0 && !isLoading && (
               <tr>
                 <td colSpan={config.columns.length} className="p-6 text-center text-muted-foreground">
-                  No data for this report.
+                  {t("noData")}
                 </td>
               </tr>
             )}
