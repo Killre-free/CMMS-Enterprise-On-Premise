@@ -67,11 +67,18 @@ jobs:
       - uses: actions/checkout@v4
 
       # This job is opt-in: it only does anything once a private registry is
-      # actually configured for this deployment (PRIVATE_REGISTRY_URL secret
-      # set). The `secrets` context isn't available in job-level `if:`, so
-      # each step below gates itself instead of hard-failing when unset.
+      # actually configured for this deployment. Gate on a plain step output
+      # (not `secrets` directly in `if:`, which GitHub Actions rejects at
+      # workflow-validation time) so the job skips cleanly when unset instead
+      # of hard-failing.
+      - name: Check registry configuration
+        id: registry
+        run: |
+          echo "configured=${{ secrets.PRIVATE_REGISTRY_URL != '' }}" >> "$GITHUB_OUTPUT"
+          echo "deploy_configured=${{ secrets.DEPLOY_HOST != '' }}" >> "$GITHUB_OUTPUT"
+
       - name: Log in to private registry
-        if: secrets.PRIVATE_REGISTRY_URL != ''
+        if: steps.registry.outputs.configured == 'true'
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.PRIVATE_REGISTRY_URL }}
@@ -79,7 +86,7 @@ jobs:
           password: ${{ secrets.PRIVATE_REGISTRY_TOKEN }}
 
       - name: Build and push image
-        if: secrets.PRIVATE_REGISTRY_URL != ''
+        if: steps.registry.outputs.configured == 'true'
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -87,7 +94,7 @@ jobs:
           tags: ${{ secrets.PRIVATE_REGISTRY_URL }}/cmms-pro:${{ github.sha }}
 
       - name: Deploy via SSH
-        if: secrets.PRIVATE_REGISTRY_URL != '' && secrets.DEPLOY_HOST != ''
+        if: steps.registry.outputs.configured == 'true' && steps.registry.outputs.deploy_configured == 'true'
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.DEPLOY_HOST }}
