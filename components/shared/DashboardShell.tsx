@@ -1,6 +1,6 @@
 "use client";
 // components/shared/DashboardShell.tsx
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { signOut } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
@@ -21,6 +21,8 @@ import {
   LogOut,
   Menu,
   Languages,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SessionUser } from "@/types";
@@ -47,6 +49,19 @@ export function DashboardShell({ user, children }: { user: SessionUser; children
   const router = useRouter();
   const [dark, setDark] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    setCollapsed(localStorage.getItem("sidebarCollapsed") === "true");
+  }, []);
+
+  function toggleCollapsed() {
+    setCollapsed((c) => {
+      const next = !c;
+      localStorage.setItem("sidebarCollapsed", String(next));
+      return next;
+    });
+  }
 
   function toggleDark() {
     setDark((d) => {
@@ -65,12 +80,20 @@ export function DashboardShell({ user, children }: { user: SessionUser; children
     <div className="flex min-h-screen">
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-64 -translate-x-full border-r border-border bg-background transition-transform md:static md:translate-x-0 print:hidden",
-          sidebarOpen && "translate-x-0"
+          "fixed inset-y-0 left-0 z-40 w-64 -translate-x-full border-r border-border bg-background transition-all md:static md:translate-x-0 print:hidden",
+          sidebarOpen && "translate-x-0",
+          collapsed && "md:w-16"
         )}
       >
-        <div className="flex h-14 items-center gap-2 border-b border-border px-4 font-semibold">
-          CMMS Pro
+        <div className="flex h-14 items-center justify-between gap-2 border-b border-border px-4 font-semibold">
+          <span className={cn(collapsed && "md:hidden")}>CMMS Pro</span>
+          <button
+            onClick={toggleCollapsed}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className="hidden shrink-0 text-muted-foreground hover:text-foreground md:block"
+          >
+            {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+          </button>
         </div>
         <nav className="flex flex-col gap-1 p-2">
           {NAV_ITEMS.map((item) => {
@@ -80,13 +103,15 @@ export function DashboardShell({ user, children }: { user: SessionUser; children
               <Link
                 key={item.href}
                 href={item.href}
+                title={collapsed ? t(item.labelKey) : undefined}
                 className={cn(
                   "flex items-center gap-3 rounded-md px-3 py-2 text-sm",
+                  collapsed && "md:justify-center",
                   active ? "bg-primary text-primary-foreground" : "hover:bg-muted"
                 )}
               >
-                <Icon size={18} />
-                {t(item.labelKey)}
+                <Icon size={18} className="shrink-0" />
+                <span className={cn(collapsed && "md:hidden")}>{t(item.labelKey)}</span>
               </Link>
             );
           })}
