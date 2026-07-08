@@ -30,6 +30,23 @@ export const workOrderSparePartCreateSchema = z.object({
   quantity: z.number().positive(),
 });
 
+export const sparePartKitItemSchema = z.object({
+  sparePartId: z.string().min(1),
+  quantity: z.number().positive(),
+});
+
+export const sparePartKitCreateSchema = z.object({
+  name: z.string().min(1).max(200),
+  description: z.string().max(1000).optional(),
+  items: z.array(sparePartKitItemSchema).min(1),
+});
+
+export const sparePartKitUpdateSchema = sparePartKitCreateSchema;
+
+export const applyKitSchema = z.object({
+  kitId: z.string().min(1),
+});
+
 export const workOrderTransitionSchema = z.object({
   toStatus: z.enum([
     "ProductionRequest",

@@ -55,6 +55,11 @@ function buildReportConfig(
     { key: "workOrderCount", label: t("workOrderCount"), value: (r) => r.workOrderCount },
     { key: "mttrHours", label: t("mttrHours"), value: (r) => r.mttrHours ?? "—" },
     { key: "mtbfHours", label: t("mtbfHours"), value: (r) => r.mtbfHours ?? "—" },
+    {
+      key: "availabilityPercent",
+      label: t("availabilityPercent"),
+      value: (r) => (r.availabilityPercent !== null && r.availabilityPercent !== undefined ? `${r.availabilityPercent}%` : "—"),
+    },
   ];
 
   return {
@@ -96,9 +101,12 @@ export default function ReportsPage() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["report", reportType],
-    queryFn: () => apiGet<Page<any> & { summary?: { avgMttrHours: number | null; avgMtbfHours: number | null } }>(
-      `${config.endpoint}?pageSize=100`
-    ),
+    queryFn: () =>
+      apiGet<
+        Page<any> & {
+          summary?: { avgMttrHours: number | null; avgMtbfHours: number | null; avgAvailabilityPercent: number | null };
+        }
+      >(`${config.endpoint}?pageSize=100`),
   });
 
   const rows = useMemo(() => data?.data ?? [], [data]);
@@ -168,6 +176,12 @@ export default function ReportsPage() {
           <div className="rounded-lg border border-border bg-background p-4">
             <p className="text-xs text-muted-foreground">{t("avgMtbfHours")}</p>
             <p className="text-xl font-semibold">{data.summary.avgMtbfHours ?? "—"}</p>
+          </div>
+          <div className="rounded-lg border border-border bg-background p-4">
+            <p className="text-xs text-muted-foreground">{t("avgAvailabilityPercent")}</p>
+            <p className="text-xl font-semibold">
+              {data.summary.avgAvailabilityPercent !== null ? `${data.summary.avgAvailabilityPercent}%` : "—"}
+            </p>
           </div>
         </div>
       )}

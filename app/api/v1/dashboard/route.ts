@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { withApiHandler } from "@/lib/api-handler";
 import { prisma } from "@/lib/prisma";
+import { computeMaintenanceKpis } from "@/lib/maintenance-kpis";
 
 export const GET = withApiHandler(async (_req, { user }) => {
   const startOfToday = new Date();
@@ -25,6 +26,8 @@ export const GET = withApiHandler(async (_req, { user }) => {
     partsBelowSafety,
     woByStatus,
     closedThisWeek,
+    reorderPendingCount,
+    maintenanceKpis,
   ] = await Promise.all([
     prisma.workOrder.count({
       where: { deletedAt: null, priority: "Critical", status: { notIn: ["Closed"] }, ...scopeFilter },
@@ -50,6 +53,8 @@ export const GET = withApiHandler(async (_req, { user }) => {
       where: { deletedAt: null, closedAt: { gte: sevenDaysAgo } },
       select: { closedAt: true, startedAt: true, completedAt: true },
     }),
+    prisma.reorderSuggestion.count({ where: { status: "Pending" } }),
+    computeMaintenanceKpis(),
   ]);
 
   // MTTR (hours) = avg(completedAt - startedAt) over WOs completed in the last 7 days.
@@ -91,8 +96,11 @@ export const GET = withApiHandler(async (_req, { user }) => {
       pmDueToday,
       pmCompletedToday,
       mttrHours: Math.round(mttrHours * 10) / 10,
+      mtbfHours: maintenanceKpis.summary.avgMtbfHours,
+      availabilityPercent: maintenanceKpis.summary.avgAvailabilityPercent,
       budgetUsedPercent: null, // Budget module ships in Phase 2 — no data source yet
       partsBelowSafetyStock: partsBelowSafety,
+      reorderPendingCount,
     },
     downtimeChart: downtimeByDay,
     woStatusDonut: woByStatus.map((g) => ({ status: g.status, count: g._count })),

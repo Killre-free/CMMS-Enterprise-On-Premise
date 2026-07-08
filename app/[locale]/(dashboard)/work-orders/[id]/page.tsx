@@ -60,10 +60,16 @@ interface SparePart {
   unit: string;
 }
 
+interface KitOption {
+  id: string;
+  name: string;
+}
+
 const inputClass = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm";
 
 export default function WorkOrderDetailPage() {
   const t = useTranslations("WorkOrderDetail");
+  const tk = useTranslations("SparePartKits");
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -77,6 +83,9 @@ export default function WorkOrderDetailPage() {
   const [partQty, setPartQty] = useState("1");
   const [partError, setPartError] = useState<string | null>(null);
   const [addingPart, setAddingPart] = useState(false);
+  const [kitId, setKitId] = useState("");
+  const [applyingKit, setApplyingKit] = useState(false);
+  const [kitError, setKitError] = useState<string | null>(null);
 
   const { data: wo, isLoading } = useQuery({
     queryKey: ["work-order", id],
@@ -86,6 +95,11 @@ export default function WorkOrderDetailPage() {
   const { data: spareParts } = useQuery({
     queryKey: ["spare-parts", "options"],
     queryFn: () => apiGet<{ data: SparePart[] }>("/api/v1/spare-parts/options"),
+  });
+
+  const { data: kits } = useQuery({
+    queryKey: ["spare-part-kits", "options"],
+    queryFn: () => apiGet<{ data: KitOption[] }>("/api/v1/spare-part-kits/options"),
   });
 
   if (isLoading || !wo) {
@@ -157,6 +171,22 @@ export default function WorkOrderDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["work-order", id] });
     } catch {
       // best-effort; the list simply won't update if this fails
+    }
+  }
+
+  async function handleApplyKit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!kitId) return;
+    setKitError(null);
+    setApplyingKit(true);
+    try {
+      await apiPost(`/api/v1/work-orders/${id}/apply-kit`, { kitId });
+      setKitId("");
+      queryClient.invalidateQueries({ queryKey: ["work-order", id] });
+    } catch (err) {
+      setKitError(err instanceof ApiError ? err.message : tk("applyKitFailed"));
+    } finally {
+      setApplyingKit(false);
     }
   }
 
@@ -296,6 +326,27 @@ export default function WorkOrderDetailPage() {
               </form>
             )}
             {partError && <p className="mt-2 text-sm text-destructive">{partError}</p>}
+
+            {wo.status !== "Closed" && kits && kits.data.length > 0 && (
+              <form onSubmit={handleApplyKit} className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
+                <select value={kitId} onChange={(e) => setKitId(e.target.value)} className={`${inputClass} w-auto flex-1`}>
+                  <option value="">{tk("selectKit")}</option>
+                  {kits.data.map((k) => (
+                    <option key={k.id} value={k.id}>
+                      {k.name}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="submit"
+                  disabled={!kitId || applyingKit}
+                  className="rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50"
+                >
+                  {applyingKit ? tk("applyingKit") : tk("applyKit")}
+                </button>
+              </form>
+            )}
+            {kitError && <p className="mt-2 text-sm text-destructive">{kitError}</p>}
           </div>
         </div>
 

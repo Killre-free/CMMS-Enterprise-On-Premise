@@ -24,6 +24,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   PackagePlus,
+  Boxes,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SessionUser } from "@/types";
@@ -37,6 +38,7 @@ const NAV_ITEMS: { href: string; labelKey: string; icon: typeof LayoutDashboard;
   { href: "/check-sheets", labelKey: "checkSheets", icon: ListChecks, moduleKey: "checkSheet" },
   { href: "/spare-parts", labelKey: "spareParts", icon: Package, moduleKey: "sparePart" },
   { href: "/reorder-suggestions", labelKey: "reorderSuggestions", icon: PackagePlus, moduleKey: "sparePart" },
+  { href: "/spare-part-kits", labelKey: "sparePartKits", icon: Boxes, moduleKey: "sparePart" },
   { href: "/reports", labelKey: "reports", icon: FileBarChart, moduleKey: "reports" },
   { href: "/notifications", labelKey: "notifications", icon: Bell, moduleKey: "notification" },
   { href: "/users", labelKey: "users", icon: Users, moduleKey: "users" },

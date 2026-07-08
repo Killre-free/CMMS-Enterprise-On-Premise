@@ -414,6 +414,34 @@ model SparePart {
   transactions        StockTransaction[]
   reorderSuggestions  ReorderSuggestion[]
   workOrderLines      WorkOrderSparePart[]
+  kitItems            SparePartKitItem[]
+}
+
+// A named bundle of spare parts commonly drawn together for a given job type
+// (e.g. "Bearing replacement kit"), so a technician can add all of them to a
+// work order in one action instead of picking each part individually.
+model SparePartKit {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+
+  deletedAt DateTime?
+  createdBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items SparePartKitItem[]
+}
+
+model SparePartKitItem {
+  id          String       @id @default(uuid())
+  kitId       String
+  kit         SparePartKit @relation(fields: [kitId], references: [id], onDelete: Cascade)
+  sparePartId String
+  sparePart   SparePart    @relation(fields: [sparePartId], references: [id])
+  quantity    Float
+
+  @@unique([kitId, sparePartId])
 }
 
 model StockTransaction {

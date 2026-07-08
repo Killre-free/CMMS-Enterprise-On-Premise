@@ -16,6 +16,7 @@
     "checkSheets": "แบบตรวจเช็ค",
     "spareParts": "อะไหล่",
     "reorderSuggestions": "แจ้งเตือนสั่งซื้อ",
+    "sparePartKits": "ชุดอะไหล่สำเร็จรูป",
     "reports": "รายงาน",
     "notifications": "การแจ้งเตือน",
     "users": "ผู้ใช้งาน",
@@ -35,7 +36,12 @@
     "yes": "ใช่",
     "no": "ไม่ใช่",
     "active": "ใช้งานอยู่",
-    "inactive": "ไม่ได้ใช้งาน"
+    "inactive": "ไม่ได้ใช้งาน",
+    "save": "บันทึก",
+    "saving": "กำลังบันทึก...",
+    "cancel": "ยกเลิก",
+    "edit": "แก้ไข",
+    "delete": "ลบ"
   },
   "Dashboard": {
     "loadFailed": "ไม่สามารถโหลดข้อมูลแดชบอร์ดได้",
@@ -43,9 +49,12 @@
     "woPending": "ใบสั่งงานค้าง",
     "pmDueToday": "PM ครบกำหนดวันนี้",
     "mttrHours": "MTTR (ชม.)",
+    "mtbfHours": "MTBF (ชม.)",
+    "availabilityPercent": "ความพร้อมใช้งาน",
     "budgetUsed": "งบประมาณที่ใช้",
     "budgetNotAvailable": "ไม่มีข้อมูล (เฟส 2)",
     "partsBelowSafety": "อะไหล่ต่ำกว่าจุดสั่งซื้อ",
+    "reorderPending": "รายการรอสั่งซื้อ",
     "downtimeLast7Days": "เวลาหยุดเครื่อง (7 วันล่าสุด)",
     "workOrderStatus": "สถานะใบสั่งงาน"
   },
@@ -195,6 +204,28 @@
     "markOrdered": "ทำเครื่องหมายว่าสั่งซื้อแล้ว",
     "updateFailed": "อัปเดตไม่สำเร็จ"
   },
+  "SparePartKits": {
+    "title": "ชุดอะไหล่สำเร็จรูป",
+    "description": "รวมอะไหล่ที่มักเบิกพร้อมกันสำหรับงานหนึ่ง ๆ ไว้เป็นชุด เพื่อให้ช่างเพิ่มเข้าใบสั่งงานได้ในคลิกเดียว",
+    "newKit": "สร้างชุดใหม่",
+    "editKit": "แก้ไขชุด",
+    "kitName": "ชื่อชุดอะไหล่",
+    "kitDescriptionOptional": "คำอธิบาย (ไม่บังคับ)",
+    "partsInKit": "อะไหล่ในชุด",
+    "noPartsAddedYet": "ยังไม่มีอะไหล่ในชุดนี้",
+    "searchOrScanPart": "ค้นหาหรือสแกนรหัสอะไหล่...",
+    "noPartsFound": "ไม่พบอะไหล่",
+    "changePart": "เปลี่ยนอะไหล่",
+    "quantity": "จำนวน",
+    "addPart": "เพิ่มอะไหล่",
+    "removePart": "ลบอะไหล่",
+    "noneFound": "ไม่พบชุดอะไหล่",
+    "saveFailed": "บันทึกชุดอะไหล่ไม่สำเร็จ",
+    "applyKit": "ใช้ชุดอะไหล่",
+    "applyingKit": "กำลังเพิ่ม...",
+    "selectKit": "เลือกชุดอะไหล่...",
+    "applyKitFailed": "เพิ่มชุดอะไหล่ไม่สำเร็จ"
+  },
   "AuditLog": {
     "title": "ประวัติการใช้งาน",
     "allModules": "ทุกโมดูล",
@@ -260,8 +291,10 @@
     "workOrderCount": "จำนวนใบสั่งงาน",
     "mttrHours": "MTTR (ชม.)",
     "mtbfHours": "MTBF (ชม.)",
+    "availabilityPercent": "ความพร้อมใช้งาน",
     "avgMttrHours": "MTTR เฉลี่ย (ชม.)",
-    "avgMtbfHours": "MTBF เฉลี่ย (ชม.)"
+    "avgMtbfHours": "MTBF เฉลี่ย (ชม.)",
+    "avgAvailabilityPercent": "ความพร้อมใช้งานเฉลี่ย"
   },
   "MachineDetail": {
     "loading": "กำลังโหลด...",

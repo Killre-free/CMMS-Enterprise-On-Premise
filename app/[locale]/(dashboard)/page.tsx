@@ -14,7 +14,7 @@ import {
   Cell,
   Legend,
 } from "recharts";
-import { AlertTriangle, ClipboardList, CalendarCheck, Timer, Wallet, PackageX } from "lucide-react";
+import { AlertTriangle, ClipboardList, CalendarCheck, Timer, Wallet, PackageX, Activity, Gauge, PackagePlus } from "lucide-react";
 
 interface DashboardData {
   kpiCards: {
@@ -25,8 +25,11 @@ interface DashboardData {
     pmDueToday: number;
     pmCompletedToday: number;
     mttrHours: number;
+    mtbfHours: number | null;
+    availabilityPercent: number | null;
     budgetUsedPercent: number | null;
     partsBelowSafetyStock: number;
+    reorderPendingCount: number;
   };
   downtimeChart: { date: string; hours: number }[];
   woStatusDonut: { status: string; count: number }[];
@@ -101,12 +104,25 @@ export default function DashboardPage() {
         <KpiCard icon={ClipboardList} label={t("woPending")} value={kpiCards.woPendingCount} />
         <KpiCard icon={CalendarCheck} label={t("pmDueToday")} value={kpiCards.pmDueToday} />
         <KpiCard icon={Timer} label={t("mttrHours")} value={kpiCards.mttrHours} />
+        <KpiCard icon={Activity} label={t("mtbfHours")} value={kpiCards.mtbfHours ?? "—"} />
+        <KpiCard
+          icon={Gauge}
+          label={t("availabilityPercent")}
+          value={kpiCards.availabilityPercent !== null ? `${kpiCards.availabilityPercent}%` : "—"}
+          danger={kpiCards.availabilityPercent !== null && kpiCards.availabilityPercent < 80}
+        />
         <KpiCard icon={Wallet} label={t("budgetUsed")} value={kpiCards.budgetUsedPercent ?? t("budgetNotAvailable")} />
         <KpiCard
           icon={PackageX}
           label={t("partsBelowSafety")}
           value={kpiCards.partsBelowSafetyStock}
           danger={kpiCards.partsBelowSafetyStock > 0}
+        />
+        <KpiCard
+          icon={PackagePlus}
+          label={t("reorderPending")}
+          value={kpiCards.reorderPendingCount}
+          danger={kpiCards.reorderPendingCount > 0}
         />
       </div>
 

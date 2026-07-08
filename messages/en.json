@@ -16,6 +16,7 @@
     "checkSheets": "Check Sheets",
     "spareParts": "Spare Parts",
     "reorderSuggestions": "Reorder Suggestions",
+    "sparePartKits": "Spare Part Kits",
     "reports": "Reports",
     "notifications": "Notifications",
     "users": "Users",
@@ -35,7 +36,12 @@
     "yes": "Yes",
     "no": "No",
     "active": "Active",
-    "inactive": "Inactive"
+    "inactive": "Inactive",
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete"
   },
   "Dashboard": {
     "loadFailed": "Failed to load dashboard data.",
@@ -43,9 +49,12 @@
     "woPending": "WO Pending",
     "pmDueToday": "PM Due Today",
     "mttrHours": "MTTR (hrs)",
+    "mtbfHours": "MTBF (hrs)",
+    "availabilityPercent": "Availability",
     "budgetUsed": "Budget Used",
     "budgetNotAvailable": "N/A (Phase 2)",
     "partsBelowSafety": "Parts Below Safety",
+    "reorderPending": "Reorder Suggestions Pending",
     "downtimeLast7Days": "Downtime (last 7 days)",
     "workOrderStatus": "Work Order Status"
   },
@@ -195,6 +204,28 @@
     "markOrdered": "Mark Ordered",
     "updateFailed": "Failed to update"
   },
+  "SparePartKits": {
+    "title": "Spare Part Kits",
+    "description": "Bundles of parts commonly drawn together for a job, so a technician can add them to a work order in one action.",
+    "newKit": "New Kit",
+    "editKit": "Edit Kit",
+    "kitName": "Kit name",
+    "kitDescriptionOptional": "Description (optional)",
+    "partsInKit": "Parts in kit",
+    "noPartsAddedYet": "No parts added yet.",
+    "searchOrScanPart": "Search or scan a part code...",
+    "noPartsFound": "No parts found.",
+    "changePart": "Change part",
+    "quantity": "Quantity",
+    "addPart": "Add part",
+    "removePart": "Remove part",
+    "noneFound": "No kits found.",
+    "saveFailed": "Failed to save kit",
+    "applyKit": "Apply Kit",
+    "applyingKit": "Applying...",
+    "selectKit": "Select a kit...",
+    "applyKitFailed": "Failed to apply kit"
+  },
   "AuditLog": {
     "title": "Audit Log",
     "allModules": "All modules",
@@ -260,8 +291,10 @@
     "workOrderCount": "Work Orders",
     "mttrHours": "MTTR (hrs)",
     "mtbfHours": "MTBF (hrs)",
+    "availabilityPercent": "Availability",
     "avgMttrHours": "Avg MTTR (hrs)",
-    "avgMtbfHours": "Avg MTBF (hrs)"
+    "avgMtbfHours": "Avg MTBF (hrs)",
+    "avgAvailabilityPercent": "Avg Availability"
   },
   "MachineDetail": {
     "loading": "Loading...",
