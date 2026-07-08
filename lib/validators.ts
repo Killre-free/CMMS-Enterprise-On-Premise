@@ -194,6 +194,22 @@ export const stockTransactionSchema = z.object({
   referenceId: z.string().optional(),
 });
 
+export const reorderSuggestionUpdateSchema = z.object({
+  status: z.enum(["Approved", "Rejected", "Ordered"]),
+});
+
+export const pushSubscribeSchema = z.object({
+  endpoint: z.string().url(),
+  keys: z.object({
+    p256dh: z.string().min(1),
+    auth: z.string().min(1),
+  }),
+});
+
+export const pushUnsubscribeSchema = z.object({
+  endpoint: z.string().url(),
+});
+
 // ── Roles & Permissions ────────────────────────────────────────────────
 
 export const roleCreateSchema = z.object({

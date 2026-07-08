@@ -2,8 +2,10 @@
 // components/shared/NotificationBell.tsx
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { Bell } from "lucide-react";
 import Link from "next/link";
+import { EnablePushButton } from "@/components/shared/EnablePushButton";
 
 interface NotificationItem {
   id: string;
@@ -22,6 +24,7 @@ async function fetchNotifications() {
 }
 
 export function NotificationBell() {
+  const t = useTranslations("Notifications");
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const { data } = useQuery({
@@ -57,11 +60,12 @@ export function NotificationBell() {
       {open && (
         <div className="absolute right-0 z-50 mt-2 w-80 rounded-md border border-border bg-background shadow-lg">
           <div className="flex items-center justify-between border-b border-border p-2 text-sm font-medium">
-            Notifications
+            {t("title")}
             <button onClick={markAllRead} className="text-xs text-primary">
-              Mark all as read
+              {t("markAllAsRead")}
             </button>
           </div>
+          <EnablePushButton />
           <div className="max-h-80 overflow-y-auto">
             {data?.data.length ? (
               data.data.map((n) => (
@@ -79,11 +83,11 @@ export function NotificationBell() {
                 </Link>
               ))
             ) : (
-              <div className="p-4 text-center text-sm text-muted-foreground">No notifications</div>
+              <div className="p-4 text-center text-sm text-muted-foreground">{t("noNotifications")}</div>
             )}
           </div>
           <Link href="/notifications" className="block p-2 text-center text-xs text-primary">
-            View all
+            {t("viewAll")}
           </Link>
         </div>
       )}

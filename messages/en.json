@@ -15,6 +15,7 @@
     "pm": "Preventive Maintenance",
     "checkSheets": "Check Sheets",
     "spareParts": "Spare Parts",
+    "reorderSuggestions": "Reorder Suggestions",
     "reports": "Reports",
     "notifications": "Notifications",
     "users": "Users",
@@ -176,6 +177,24 @@
     "loadFailed": "Failed to load roles.",
     "editPermissions": "Edit Permissions"
   },
+  "ReorderSuggestions": {
+    "title": "Reorder Suggestions",
+    "description": "Spare parts that dropped below their safety stock level when a work order closed.",
+    "allStatuses": "All statuses",
+    "statusPending": "Pending",
+    "statusApproved": "Approved",
+    "statusRejected": "Rejected",
+    "statusOrdered": "Ordered",
+    "part": "Part",
+    "currentStock": "Current Stock",
+    "safetyStock": "Safety Stock",
+    "suggestedQty": "Suggested Qty",
+    "noneFound": "No reorder suggestions found.",
+    "approve": "Approve",
+    "reject": "Reject",
+    "markOrdered": "Mark Ordered",
+    "updateFailed": "Failed to update"
+  },
   "AuditLog": {
     "title": "Audit Log",
     "allModules": "All modules",
@@ -209,7 +228,9 @@
     "noNotifications": "No notifications.",
     "previous": "Previous",
     "pageOf": "Page {page} of {totalPages}",
-    "next": "Next"
+    "next": "Next",
+    "enablePush": "Enable push notifications on this device",
+    "viewAll": "View all"
   },
   "Reports": {
     "title": "Reports",
@@ -234,7 +255,13 @@
     "printPdf": "Print / PDF",
     "reportSuffix": "{label} Report",
     "loadFailed": "Failed to load report data.",
-    "noData": "No data for this report."
+    "noData": "No data for this report.",
+    "maintenanceKpis": "Maintenance KPIs (MTTR/MTBF)",
+    "workOrderCount": "Work Orders",
+    "mttrHours": "MTTR (hrs)",
+    "mtbfHours": "MTBF (hrs)",
+    "avgMttrHours": "Avg MTTR (hrs)",
+    "avgMtbfHours": "Avg MTBF (hrs)"
   },
   "MachineDetail": {
     "loading": "Loading...",

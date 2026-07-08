@@ -123,6 +123,7 @@ model User {
   checkSheetSubmissions CheckSheetSubmission[]
   stockTransactions    StockTransaction[]
   notifications        Notification[]
+  pushSubscriptions    PushSubscription[]
   auditLogs            AuditLog[]
 }
 
@@ -460,6 +461,17 @@ model Notification {
   readAt    DateTime?
   deletedAt DateTime?
   createdAt DateTime         @default(now())
+}
+
+// One row per browser/device the user enabled push notifications on.
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
 }
 
 model AuditLog {

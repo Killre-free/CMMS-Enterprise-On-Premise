@@ -7,7 +7,7 @@ import { Download, Printer } from "lucide-react";
 import { apiGet, type Page } from "@/lib/api-client";
 import { formatDate } from "@/lib/utils";
 
-type ReportType = "workOrders" | "spareParts" | "machines";
+type ReportType = "workOrders" | "spareParts" | "machines" | "maintenanceKpis";
 
 const inputClass = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm";
 
@@ -49,10 +49,23 @@ function buildReportConfig(
     { key: "lifeCycleStatus", label: t("status"), value: (r) => r.lifeCycleStatus },
   ];
 
+  const maintenanceKpiColumns: Column<any>[] = [
+    { key: "machineCode", label: t("code"), value: (r) => r.machineCode },
+    { key: "machineName", label: t("name"), value: (r) => r.machineName },
+    { key: "workOrderCount", label: t("workOrderCount"), value: (r) => r.workOrderCount },
+    { key: "mttrHours", label: t("mttrHours"), value: (r) => r.mttrHours ?? "—" },
+    { key: "mtbfHours", label: t("mtbfHours"), value: (r) => r.mtbfHours ?? "—" },
+  ];
+
   return {
     workOrders: { label: t("workOrders"), endpoint: "/api/v1/work-orders", columns: workOrderColumns },
     spareParts: { label: t("sparePartsStock"), endpoint: "/api/v1/spare-parts", columns: sparePartColumns },
     machines: { label: t("machines"), endpoint: "/api/v1/machines", columns: machineColumns },
+    maintenanceKpis: {
+      label: t("maintenanceKpis"),
+      endpoint: "/api/v1/reports/maintenance-kpis",
+      columns: maintenanceKpiColumns,
+    },
   };
 }
 
@@ -83,7 +96,9 @@ export default function ReportsPage() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["report", reportType],
-    queryFn: () => apiGet<Page<any>>(`${config.endpoint}?pageSize=100`),
+    queryFn: () => apiGet<Page<any> & { summary?: { avgMttrHours: number | null; avgMtbfHours: number | null } }>(
+      `${config.endpoint}?pageSize=100`
+    ),
   });
 
   const rows = useMemo(() => data?.data ?? [], [data]);
@@ -143,6 +158,19 @@ export default function ReportsPage() {
       </select>
 
       <h2 className="hidden text-lg font-semibold print:block">{t("reportSuffix", { label: config.label })}</h2>
+
+      {reportType === "maintenanceKpis" && data?.summary && (
+        <div className="flex flex-wrap gap-4">
+          <div className="rounded-lg border border-border bg-background p-4">
+            <p className="text-xs text-muted-foreground">{t("avgMttrHours")}</p>
+            <p className="text-xl font-semibold">{data.summary.avgMttrHours ?? "—"}</p>
+          </div>
+          <div className="rounded-lg border border-border bg-background p-4">
+            <p className="text-xs text-muted-foreground">{t("avgMtbfHours")}</p>
+            <p className="text-xl font-semibold">{data.summary.avgMtbfHours ?? "—"}</p>
+          </div>
+        </div>
+      )}
 
       <div className="overflow-x-auto rounded-lg border border-border">
         <table className="w-full text-left text-sm">

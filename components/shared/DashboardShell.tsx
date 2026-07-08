@@ -23,6 +23,7 @@ import {
   Languages,
   PanelLeftClose,
   PanelLeftOpen,
+  PackagePlus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SessionUser } from "@/types";
@@ -35,6 +36,7 @@ const NAV_ITEMS: { href: string; labelKey: string; icon: typeof LayoutDashboard;
   { href: "/pm", labelKey: "pm", icon: CalendarCheck, moduleKey: "pm" },
   { href: "/check-sheets", labelKey: "checkSheets", icon: ListChecks, moduleKey: "checkSheet" },
   { href: "/spare-parts", labelKey: "spareParts", icon: Package, moduleKey: "sparePart" },
+  { href: "/reorder-suggestions", labelKey: "reorderSuggestions", icon: PackagePlus, moduleKey: "sparePart" },
   { href: "/reports", labelKey: "reports", icon: FileBarChart, moduleKey: "reports" },
   { href: "/notifications", labelKey: "notifications", icon: Bell, moduleKey: "notification" },
   { href: "/users", labelKey: "users", icon: Users, moduleKey: "users" },

@@ -15,6 +15,7 @@
     "pm": "บำรุงรักษาเชิงป้องกัน",
     "checkSheets": "แบบตรวจเช็ค",
     "spareParts": "อะไหล่",
+    "reorderSuggestions": "แจ้งเตือนสั่งซื้อ",
     "reports": "รายงาน",
     "notifications": "การแจ้งเตือน",
     "users": "ผู้ใช้งาน",
@@ -176,6 +177,24 @@
     "loadFailed": "ไม่สามารถโหลดบทบาทได้",
     "editPermissions": "แก้ไขสิทธิ์การใช้งาน"
   },
+  "ReorderSuggestions": {
+    "title": "แจ้งเตือนสั่งซื้อ",
+    "description": "อะไหล่ที่สต๊อกต่ำกว่าจุดสั่งซื้อ ตอนปิดใบสั่งงานที่เบิกอะไหล่นั้น",
+    "allStatuses": "ทุกสถานะ",
+    "statusPending": "รอดำเนินการ",
+    "statusApproved": "อนุมัติแล้ว",
+    "statusRejected": "ปฏิเสธ",
+    "statusOrdered": "สั่งซื้อแล้ว",
+    "part": "อะไหล่",
+    "currentStock": "สต๊อกปัจจุบัน",
+    "safetyStock": "สต๊อกขั้นต่ำ",
+    "suggestedQty": "จำนวนที่แนะนำให้สั่ง",
+    "noneFound": "ไม่พบรายการแจ้งเตือนสั่งซื้อ",
+    "approve": "อนุมัติ",
+    "reject": "ปฏิเสธ",
+    "markOrdered": "ทำเครื่องหมายว่าสั่งซื้อแล้ว",
+    "updateFailed": "อัปเดตไม่สำเร็จ"
+  },
   "AuditLog": {
     "title": "ประวัติการใช้งาน",
     "allModules": "ทุกโมดูล",
@@ -209,7 +228,9 @@
     "noNotifications": "ไม่มีการแจ้งเตือน",
     "previous": "ก่อนหน้า",
     "pageOf": "หน้า {page} จาก {totalPages}",
-    "next": "ถัดไป"
+    "next": "ถัดไป",
+    "enablePush": "เปิดการแจ้งเตือนบนอุปกรณ์นี้",
+    "viewAll": "ดูทั้งหมด"
   },
   "Reports": {
     "title": "รายงาน",
@@ -234,7 +255,13 @@
     "printPdf": "พิมพ์ / PDF",
     "reportSuffix": "รายงาน{label}",
     "loadFailed": "ไม่สามารถโหลดข้อมูลรายงานได้",
-    "noData": "ไม่มีข้อมูลสำหรับรายงานนี้"
+    "noData": "ไม่มีข้อมูลสำหรับรายงานนี้",
+    "maintenanceKpis": "KPI งานซ่อมบำรุง (MTTR/MTBF)",
+    "workOrderCount": "จำนวนใบสั่งงาน",
+    "mttrHours": "MTTR (ชม.)",
+    "mtbfHours": "MTBF (ชม.)",
+    "avgMttrHours": "MTTR เฉลี่ย (ชม.)",
+    "avgMtbfHours": "MTBF เฉลี่ย (ชม.)"
   },
   "MachineDetail": {
     "loading": "กำลังโหลด...",

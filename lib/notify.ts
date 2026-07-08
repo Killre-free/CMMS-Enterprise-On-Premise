@@ -3,6 +3,7 @@ import nodemailer from "nodemailer";
 import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
+import { sendPushToUsers } from "@/lib/push";
 import type { NotificationType } from "@prisma/client";
 
 const transporter =
@@ -26,9 +27,9 @@ interface NotifyInput {
 }
 
 /**
- * Phase 1 channels: in-app (Notification Center) + email.
- * LINE/push/SMS/Telegram/Teams are added in Phase 2 behind the same call
- * signature, so callers don't need to change when those channels arrive.
+ * Channels: in-app (Notification Center) + Web Push (if the recipient
+ * enabled it on any device) + email (opt-in per call via sendEmail).
+ * LINE/SMS/Telegram/Teams can be added behind this same signature later.
  */
 export async function notify(input: NotifyInput): Promise<void> {
   const uniqueUserIds = Array.from(new Set(input.userIds));
@@ -45,6 +46,8 @@ export async function notify(input: NotifyInput): Promise<void> {
       linkUrl: input.linkUrl,
     })),
   });
+
+  await sendPushToUsers(uniqueUserIds, { title: input.title, message: input.message, linkUrl: input.linkUrl });
 
   if (input.sendEmail && transporter) {
     const users = await prisma.user.findMany({

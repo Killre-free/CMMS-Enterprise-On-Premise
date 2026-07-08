@@ -25,6 +25,12 @@ const envSchema = z.object({
   ANTHROPIC_API_KEY: z.string().optional(),
   OPENAI_API_KEY: z.string().optional(),
 
+  // Web Push: browser/mobile notifications with no external account needed.
+  // Generate a pair with `npx web-push generate-vapid-keys`.
+  NEXT_PUBLIC_VAPID_PUBLIC_KEY: z.string().optional(),
+  VAPID_PRIVATE_KEY: z.string().optional(),
+  VAPID_SUBJECT: z.string().default("mailto:admin@example.com"),
+
   MQTT_BROKER_URL: z.string().optional(),
   MQTT_USERNAME: z.string().optional(),
   MQTT_PASSWORD: z.string().optional(),
