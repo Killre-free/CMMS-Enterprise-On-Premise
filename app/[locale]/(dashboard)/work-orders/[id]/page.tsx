@@ -5,10 +5,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { ArrowLeft } from "lucide-react";
-import { apiGet, apiPost, ApiError } from "@/lib/api-client";
+import { apiGet, apiPost, apiDelete, ApiError } from "@/lib/api-client";
 import { Badge, PRIORITY_COLOR, STATUS_COLOR } from "@/components/shared/Badge";
 import { PhotoUpload } from "@/components/shared/PhotoUpload";
+import { SearchPicker } from "@/components/shared/SearchPicker";
 import { formatDate } from "@/lib/utils";
+import { Trash2, CheckCircle2 } from "lucide-react";
 
 const ALLOWED_NEXT: Record<string, string[]> = {
   ProductionRequest: ["WaitingTechnician"],
@@ -44,6 +46,18 @@ interface WorkOrderDetail {
     comment: string | null;
     changedBy: { firstName: string; lastName: string };
   }[];
+  partsUsed: {
+    id: string;
+    quantity: number;
+    sparePart: { partCode: string; partName: string; unit: string };
+  }[];
+}
+
+interface SparePart {
+  id: string;
+  partCode: string;
+  partName: string;
+  unit: string;
 }
 
 const inputClass = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm";
@@ -58,10 +72,20 @@ export default function WorkOrderDetailPage() {
   const [photos, setPhotos] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [accepting, setAccepting] = useState(false);
+  const [partId, setPartId] = useState("");
+  const [partQty, setPartQty] = useState("1");
+  const [partError, setPartError] = useState<string | null>(null);
+  const [addingPart, setAddingPart] = useState(false);
 
   const { data: wo, isLoading } = useQuery({
     queryKey: ["work-order", id],
     queryFn: () => apiGet<WorkOrderDetail>(`/api/v1/work-orders/${id}`),
+  });
+
+  const { data: spareParts } = useQuery({
+    queryKey: ["spare-parts", "options"],
+    queryFn: () => apiGet<{ data: SparePart[] }>("/api/v1/spare-parts/options"),
   });
 
   if (isLoading || !wo) {
@@ -94,6 +118,48 @@ export default function WorkOrderDetailPage() {
     }
   }
 
+  async function handleAccept() {
+    setError(null);
+    setAccepting(true);
+    try {
+      await apiPost(`/api/v1/work-orders/${id}/transition`, {
+        toStatus: "Accepted",
+        version: wo!.version,
+      });
+      queryClient.invalidateQueries({ queryKey: ["work-order", id] });
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : t("updateFailed"));
+    } finally {
+      setAccepting(false);
+    }
+  }
+
+  async function handleAddPart(e: React.FormEvent) {
+    e.preventDefault();
+    if (!partId) return;
+    setPartError(null);
+    setAddingPart(true);
+    try {
+      await apiPost(`/api/v1/work-orders/${id}/parts`, { sparePartId: partId, quantity: Number(partQty) });
+      setPartId("");
+      setPartQty("1");
+      queryClient.invalidateQueries({ queryKey: ["work-order", id] });
+    } catch (err) {
+      setPartError(err instanceof ApiError ? err.message : t("addPartFailed"));
+    } finally {
+      setAddingPart(false);
+    }
+  }
+
+  async function handleRemovePart(partLineId: string) {
+    try {
+      await apiDelete(`/api/v1/work-orders/${id}/parts/${partLineId}`);
+      queryClient.invalidateQueries({ queryKey: ["work-order", id] });
+    } catch {
+      // best-effort; the list simply won't update if this fails
+    }
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <button
@@ -117,6 +183,19 @@ export default function WorkOrderDetailPage() {
           <Badge color={STATUS_COLOR[wo.status]}>{wo.status}</Badge>
         </div>
       </div>
+
+      {wo.status === "WaitingTechnician" && (
+        <div className="flex items-center justify-between gap-2 rounded-lg border border-primary bg-primary/5 p-4">
+          <p className="text-sm font-medium">{t("waitingTechnicianBanner")}</p>
+          <button
+            onClick={handleAccept}
+            disabled={accepting}
+            className="flex items-center gap-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+          >
+            <CheckCircle2 size={16} /> {accepting ? t("accepting") : t("acceptWorkOrder")}
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="flex flex-col gap-4 lg:col-span-2">
@@ -155,6 +234,68 @@ export default function WorkOrderDetailPage() {
                 </li>
               ))}
             </ul>
+          </div>
+
+          <div className="rounded-lg border border-border bg-background p-4">
+            <h2 className="mb-2 text-sm font-medium">{t("partsUsed")}</h2>
+            {wo.partsUsed.length === 0 ? (
+              <p className="mb-3 text-sm text-muted-foreground">{t("noPartsUsedYet")}</p>
+            ) : (
+              <ul className="mb-3 flex flex-col gap-2">
+                {wo.partsUsed.map((p) => (
+                  <li key={p.id} className="flex items-center justify-between border-b border-border pb-2 text-sm last:border-0">
+                    <span>
+                      {p.sparePart.partCode} — {p.sparePart.partName}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground">
+                        {p.quantity} {p.sparePart.unit}
+                      </span>
+                      {wo.status !== "Closed" && (
+                        <button
+                          onClick={() => handleRemovePart(p.id)}
+                          aria-label={t("removePart")}
+                          className="text-muted-foreground hover:text-destructive"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {wo.status !== "Closed" && (
+              <form onSubmit={handleAddPart} className="flex flex-wrap items-end gap-2">
+                <div className="min-w-[220px] flex-1">
+                  <SearchPicker
+                    items={(spareParts?.data ?? []).map((p) => ({ id: p.id, code: p.partCode, label: p.partName }))}
+                    value={partId}
+                    onChange={setPartId}
+                    placeholder={t("searchOrScanPart")}
+                    noResultsText={t("noPartsFound")}
+                    changeLabel={t("changePart")}
+                  />
+                </div>
+                <input
+                  type="number"
+                  min="0.01"
+                  step="any"
+                  value={partQty}
+                  onChange={(e) => setPartQty(e.target.value)}
+                  className={`${inputClass} w-24`}
+                  aria-label={t("quantity")}
+                />
+                <button
+                  type="submit"
+                  disabled={!partId || addingPart}
+                  className="rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50"
+                >
+                  {addingPart ? t("adding") : t("addPart")}
+                </button>
+              </form>
+            )}
+            {partError && <p className="mt-2 text-sm text-destructive">{partError}</p>}
           </div>
         </div>
 

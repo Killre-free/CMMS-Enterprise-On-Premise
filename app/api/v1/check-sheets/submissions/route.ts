@@ -15,10 +15,12 @@ export const GET = withApiHandler(async (req, { user }) => {
   const { page, pageSize, skip, take } = paginationParams(url.searchParams);
   const templateId = url.searchParams.get("templateId") ?? undefined;
   const linkedWorkOrderId = url.searchParams.get("workOrderId") ?? undefined;
+  const machineId = url.searchParams.get("machineId") ?? undefined;
 
   const where = {
     ...(templateId ? { templateId } : {}),
     ...(linkedWorkOrderId ? { linkedWorkOrderId } : {}),
+    ...(machineId ? { machineId } : {}),
   };
 
   const [data, total] = await Promise.all([
@@ -27,7 +29,7 @@ export const GET = withApiHandler(async (req, { user }) => {
       skip,
       take,
       orderBy: { createdAt: "desc" },
-      include: { template: true, submittedBy: true, responses: true },
+      include: { template: true, submittedBy: true, responses: true, machine: true },
     }),
     prisma.checkSheetSubmission.count({ where }),
   ]);
@@ -82,6 +84,7 @@ export const POST = withApiHandler(async (req, { user }) => {
         templateVersion: template.version,
         linkedType: body.linkedType,
         linkedWorkOrderId: body.linkedWorkOrderId,
+        machineId: body.machineId,
         submittedById: user.id,
         submittedAt: body.status === "Submitted" ? new Date() : null,
         status: body.status,

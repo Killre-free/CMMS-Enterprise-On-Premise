@@ -162,8 +162,9 @@ model Machine {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  pmPlans    PMPlan[]
-  workOrders WorkOrder[]
+  pmPlans            PMPlan[]
+  workOrders         WorkOrder[]
+  checkSheetSubmissions CheckSheetSubmission[]
 }
 
 // ── Work Orders ─────────────────────────────────────────────────────────
@@ -301,6 +302,7 @@ enum CheckSheetLinkedType {
   Standalone
   WorkOrder
   PM
+  Machine
 }
 
 enum CheckSheetSubmissionStatus {
@@ -347,6 +349,8 @@ model CheckSheetSubmission {
   linkedType      CheckSheetLinkedType        @default(Standalone)
   linkedWorkOrderId String?
   linkedWorkOrder WorkOrder?                 @relation(fields: [linkedWorkOrderId], references: [id])
+  machineId       String?
+  machine         Machine?                   @relation(fields: [machineId], references: [id])
   submittedById   String
   submittedBy     User                       @relation(fields: [submittedById], references: [id])
   submittedAt     DateTime?

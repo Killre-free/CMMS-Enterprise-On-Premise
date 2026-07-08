@@ -25,6 +25,11 @@ export const workOrderCreateSchema = z.object({
   reportPhotos: z.array(z.string()).optional(),
 });
 
+export const workOrderSparePartCreateSchema = z.object({
+  sparePartId: z.string().min(1),
+  quantity: z.number().positive(),
+});
+
 export const workOrderTransitionSchema = z.object({
   toStatus: z.enum([
     "ProductionRequest",
@@ -235,8 +240,9 @@ export const checkSheetTemplateCreateSchema = z.object({
 
 export const checkSheetSubmissionSchema = z.object({
   templateId: z.string().min(1),
-  linkedType: z.enum(["Standalone", "WorkOrder", "PM"]).default("Standalone"),
+  linkedType: z.enum(["Standalone", "WorkOrder", "PM", "Machine"]).default("Standalone"),
   linkedWorkOrderId: z.string().optional(),
+  machineId: z.string().optional(),
   status: z.enum(["Draft", "Submitted"]).default("Draft"),
   responses: z.array(
     z.object({

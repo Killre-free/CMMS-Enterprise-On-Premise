@@ -36,7 +36,7 @@ function CreateWorkOrderForm({ onDone }: { onDone: () => void }) {
   const queryClient = useQueryClient();
   const { data: machines } = useQuery({
     queryKey: ["machines", "options"],
-    queryFn: () => apiGet<Page<Machine>>("/api/v1/machines?pageSize=500"),
+    queryFn: () => apiGet<{ data: Machine[] }>("/api/v1/machines/options"),
   });
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");

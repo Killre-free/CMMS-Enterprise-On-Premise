@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Plus } from "lucide-react";
 import { apiGet, apiPost, ApiError, type Page } from "@/lib/api-client";
 import { Modal } from "@/components/shared/Modal";
+import { MachinePicker } from "@/components/shared/MachinePicker";
 import { formatDate } from "@/lib/utils";
 
 interface PMPlan {
@@ -31,7 +32,7 @@ function CreatePMForm({ onDone }: { onDone: () => void }) {
   const queryClient = useQueryClient();
   const { data: machines } = useQuery({
     queryKey: ["machines", "options"],
-    queryFn: () => apiGet<Page<Machine>>("/api/v1/machines?pageSize=100"),
+    queryFn: () => apiGet<{ data: Machine[] }>("/api/v1/machines/options"),
   });
   const [name, setName] = useState("");
   const [machineId, setMachineId] = useState("");
@@ -42,6 +43,10 @@ function CreatePMForm({ onDone }: { onDone: () => void }) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!machineId) {
+      setError(t("selectMachine"));
+      return;
+    }
     setError(null);
     setSubmitting(true);
     try {
@@ -68,14 +73,7 @@ function CreatePMForm({ onDone }: { onDone: () => void }) {
       </div>
       <div>
         <label className="mb-1 block text-sm font-medium">{t("machine")}</label>
-        <select required value={machineId} onChange={(e) => setMachineId(e.target.value)} className={inputClass}>
-          <option value="">{t("selectMachine")}</option>
-          {machines?.data.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.machineCode} — {m.machineName}
-            </option>
-          ))}
-        </select>
+        <MachinePicker machines={machines?.data ?? []} value={machineId} onChange={setMachineId} />
       </div>
       <div>
         <label className="mb-1 block text-sm font-medium">{t("frequency")}</label>

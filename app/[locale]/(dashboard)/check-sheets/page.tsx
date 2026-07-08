@@ -6,6 +6,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { apiGet, apiPost, ApiError } from "@/lib/api-client";
 import { Badge } from "@/components/shared/Badge";
 import { Modal } from "@/components/shared/Modal";
+import { MachinePicker } from "@/components/shared/MachinePicker";
 import { formatDate } from "@/lib/utils";
 
 interface Field {
@@ -30,6 +31,13 @@ interface Submission {
   createdAt: string;
   template: { name: string };
   submittedBy: { firstName: string; lastName: string };
+  machine: { machineCode: string; machineName: string } | null;
+}
+
+interface Machine {
+  id: string;
+  machineCode: string;
+  machineName: string;
 }
 
 const inputClass = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm";
@@ -138,6 +146,11 @@ function CreateTemplateForm({ onDone }: { onDone: () => void }) {
 function SubmitCheckSheetForm({ template, onDone }: { template: Template; onDone: () => void }) {
   const t = useTranslations("CheckSheets");
   const queryClient = useQueryClient();
+  const { data: machines } = useQuery({
+    queryKey: ["machines", "options"],
+    queryFn: () => apiGet<{ data: Machine[] }>("/api/v1/machines/options"),
+  });
+  const [machineId, setMachineId] = useState("");
   const [values, setValues] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -150,6 +163,8 @@ function SubmitCheckSheetForm({ template, onDone }: { template: Template; onDone
       await apiPost("/api/v1/check-sheets/submissions", {
         templateId: template.id,
         status,
+        linkedType: machineId ? "Machine" : "Standalone",
+        machineId: machineId || undefined,
         responses: template.fields.map((f) => ({ fieldId: f.id, value: values[f.id] ?? "" })),
       });
       queryClient.invalidateQueries({ queryKey: ["check-sheet-submissions"] });
@@ -163,6 +178,10 @@ function SubmitCheckSheetForm({ template, onDone }: { template: Template; onDone
 
   return (
     <form onSubmit={(e) => handleSubmit(e, "Submitted")} className="flex flex-col gap-3">
+      <div>
+        <label className="mb-1 block text-sm font-medium">{t("machineOptional")}</label>
+        <MachinePicker machines={machines?.data ?? []} value={machineId} onChange={setMachineId} />
+      </div>
       {template.fields
         .sort((a, b) => a.order - b.order)
         .map((f) => (
@@ -270,6 +289,9 @@ export default function CheckSheetsPage() {
             <li key={s.id} className="flex items-center justify-between border-b border-border pb-2 text-sm last:border-0">
               <span>
                 {s.template.name} — {s.submittedBy.firstName} {s.submittedBy.lastName}
+                {s.machine && (
+                  <span className="text-muted-foreground"> · {s.machine.machineCode}</span>
+                )}
               </span>
               <div className="flex items-center gap-2">
                 <Badge color={s.status === "Submitted" ? "green" : "gray"}>{s.status}</Badge>
