@@ -144,6 +144,7 @@ model Machine {
   location     String?
   criticality  String?
   installedAt  DateTime?
+  notes        String?
 
   departmentId String?
   department   Department? @relation(fields: [departmentId], references: [id])

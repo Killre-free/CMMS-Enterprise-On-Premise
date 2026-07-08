@@ -23,10 +23,13 @@ export const POST = withApiHandler(async (req, { user }) => {
 
     let departmentId: string | undefined;
     if (row.departmentName) {
-      const department = await prisma.department.findFirst({
-        where: { name: row.departmentName, ...(plantId ? { plantId } : {}) },
-      });
-      if (!department) throw new Error(`Department "${row.departmentName}" not found.`);
+      const department =
+        (await prisma.department.findFirst({
+          where: { name: row.departmentName, ...(plantId ? { plantId } : {}) },
+        })) ??
+        (await prisma.department.create({
+          data: { name: row.departmentName, plantId },
+        }));
       departmentId = department.id;
     }
 
@@ -40,6 +43,8 @@ export const POST = withApiHandler(async (req, { user }) => {
         serialNumber: row.serialNumber,
         location: row.location,
         criticality: row.criticality,
+        installedAt: row.installedAt,
+        notes: row.notes,
         lifeCycleStatus: row.lifeCycleStatus,
         departmentId,
         plantId,

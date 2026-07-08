@@ -18,6 +18,8 @@ const MACHINE_IMPORT_COLUMNS: ImportColumn[] = [
   { key: "serialNumber", label: "Serial Number", example: "SN12345" },
   { key: "location", label: "Location", example: "Building A" },
   { key: "criticality", label: "Criticality", example: "High" },
+  { key: "installedAt", label: "Installed Date", example: "2020-01-01" },
+  { key: "notes", label: "Notes", example: "" },
   { key: "departmentName", label: "Department Name", example: "Production" },
   { key: "plantCode", label: "Plant Code", example: "PLT-01" },
   { key: "lifeCycleStatus", label: "Life Cycle Status", example: "Active" },

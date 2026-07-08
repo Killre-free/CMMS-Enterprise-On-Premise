@@ -58,6 +58,8 @@ export const machineCreateSchema = z.object({
   serialNumber: z.string().optional(),
   location: z.string().optional(),
   criticality: z.string().optional(),
+  installedAt: z.coerce.date().optional(),
+  notes: z.string().optional(),
   departmentId: z.string().optional(),
   plantId: z.string().optional(),
   lifeCycleStatus: z.enum(["Active", "UnderMaintenance", "Retired"]).optional(),
@@ -67,6 +69,8 @@ export const machineUpdateSchema = machineCreateSchema.partial();
 
 // Excel import: departmentName/plantCode (human-readable) instead of
 // departmentId/plantId (opaque ids Excel editors can't be expected to know).
+// A departmentName with no matching Department is auto-created, since bulk
+// imports into a fresh system routinely predate any manual department setup.
 export const machineImportRowSchema = z.object({
   machineCode: z.string().min(1, "machineCode is required"),
   machineName: z.string().min(1, "machineName is required"),
@@ -75,6 +79,8 @@ export const machineImportRowSchema = z.object({
   serialNumber: z.string().optional(),
   location: z.string().optional(),
   criticality: z.string().optional(),
+  installedAt: z.coerce.date().optional(),
+  notes: z.string().optional(),
   departmentName: z.string().optional(),
   plantCode: z.string().optional(),
   lifeCycleStatus: z.enum(["Active", "UnderMaintenance", "Retired"]).optional(),
