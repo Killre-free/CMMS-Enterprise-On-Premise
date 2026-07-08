@@ -7,6 +7,8 @@ import { Plus } from "lucide-react";
 import { apiGet, apiPost, type Page } from "@/lib/api-client";
 import { Badge, PRIORITY_COLOR, STATUS_COLOR } from "@/components/shared/Badge";
 import { Modal } from "@/components/shared/Modal";
+import { PhotoUpload } from "@/components/shared/PhotoUpload";
+import { MachinePicker } from "@/components/shared/MachinePicker";
 import { formatDate } from "@/lib/utils";
 
 interface WorkOrder {
@@ -34,21 +36,32 @@ function CreateWorkOrderForm({ onDone }: { onDone: () => void }) {
   const queryClient = useQueryClient();
   const { data: machines } = useQuery({
     queryKey: ["machines", "options"],
-    queryFn: () => apiGet<Page<Machine>>("/api/v1/machines?pageSize=100"),
+    queryFn: () => apiGet<Page<Machine>>("/api/v1/machines?pageSize=500"),
   });
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("Medium");
   const [machineId, setMachineId] = useState("");
+  const [reportPhotos, setReportPhotos] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!machineId) {
+      setError(t("selectMachine"));
+      return;
+    }
     setError(null);
     setSubmitting(true);
     try {
-      await apiPost("/api/v1/work-orders", { title, description, priority, machineId });
+      await apiPost("/api/v1/work-orders", {
+        title,
+        description,
+        priority,
+        machineId,
+        reportPhotos: reportPhotos.length > 0 ? reportPhotos : undefined,
+      });
       queryClient.invalidateQueries({ queryKey: ["work-orders"] });
       onDone();
     } catch (err) {
@@ -75,14 +88,7 @@ function CreateWorkOrderForm({ onDone }: { onDone: () => void }) {
       </div>
       <div>
         <label className="mb-1 block text-sm font-medium">{t("machine")}</label>
-        <select required value={machineId} onChange={(e) => setMachineId(e.target.value)} className={inputClass}>
-          <option value="">{t("selectMachine")}</option>
-          {machines?.data.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.machineCode} — {m.machineName}
-            </option>
-          ))}
-        </select>
+        <MachinePicker machines={machines?.data ?? []} value={machineId} onChange={setMachineId} />
       </div>
       <div>
         <label className="mb-1 block text-sm font-medium">{t("priority")}</label>
@@ -94,6 +100,7 @@ function CreateWorkOrderForm({ onDone }: { onDone: () => void }) {
           ))}
         </select>
       </div>
+      <PhotoUpload value={reportPhotos} onChange={setReportPhotos} label={t("photos")} />
       {error && <p className="text-sm text-destructive">{error}</p>}
       <button
         type="submit"

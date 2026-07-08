@@ -62,7 +62,7 @@ export function problem(
 export function paginationParams(searchParams: URLSearchParams) {
   const page = Math.max(1, Number(searchParams.get("page") ?? 1));
   const pageSizeRaw = Number(searchParams.get("pageSize") ?? 20);
-  const pageSize = [20, 50, 100].includes(pageSizeRaw) ? pageSizeRaw : 20;
+  const pageSize = [20, 50, 100, 500].includes(pageSizeRaw) ? pageSizeRaw : 20;
   return { page, pageSize, skip: (page - 1) * pageSize, take: pageSize };
 }
 

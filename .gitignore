@@ -7,3 +7,4 @@ npm-debug.log*
 next-env.d.ts
 /prisma/migrations/.tmp
 .DS_Store
+/public/uploads/

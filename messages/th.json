@@ -54,7 +54,10 @@
     "createFailed": "สร้างใบสั่งงานไม่สำเร็จ",
     "description": "รายละเอียด",
     "machine": "เครื่องจักร",
-    "selectMachine": "เลือกเครื่องจักร...",
+    "selectMachine": "กรุณาเลือกเครื่องจักร",
+    "searchOrScanMachine": "ค้นหาด้วยรหัส/ชื่อ หรือสแกน QR label ที่ติดเครื่องจักร...",
+    "noMachinesFound": "ไม่พบเครื่องจักร",
+    "changeMachine": "เปลี่ยนเครื่องจักร",
     "priority": "ความสำคัญ",
     "creating": "กำลังสร้าง...",
     "createWorkOrder": "สร้างใบสั่งงาน",
@@ -63,6 +66,7 @@
     "allPriorities": "ทุกความสำคัญ",
     "woNumber": "เลขที่ใบสั่งงาน",
     "assignedTo": "มอบหมายให้",
+    "photos": "รูปภาพ",
     "loadFailed": "ไม่สามารถโหลดใบสั่งงานได้",
     "noWorkOrdersYet": "ยังไม่มีใบสั่งงาน"
   },
@@ -243,7 +247,9 @@
     "due": "ครบกำหนด {date}",
     "noDueDate": "ไม่มีวันครบกำหนด",
     "recentWorkOrders": "ใบสั่งงานล่าสุด",
-    "noWorkOrders": "ยังไม่มีใบสั่งงานสำหรับเครื่องจักรนี้"
+    "noWorkOrders": "ยังไม่มีใบสั่งงานสำหรับเครื่องจักรนี้",
+    "printQrLabel": "พิมพ์ QR Label",
+    "qrCodeAlt": "คิวอาร์โค้ด"
   },
   "WorkOrderDetail": {
     "loading": "กำลังโหลด...",
@@ -261,7 +267,7 @@
     "closed": "ใบสั่งงานนี้ปิดแล้ว",
     "selectNextStatus": "เลือกสถานะถัดไป...",
     "commentOptional": "ความคิดเห็น (ไม่บังคับ)",
-    "photoUrlsPlaceholder": "URL รูปภาพ คั่นด้วยจุลภาค (จำเป็นเมื่อจะปิดงาน)",
+    "photos": "รูปภาพ (จำเป็นเมื่อจะปิดงาน)",
     "updating": "กำลังอัปเดต...",
     "updateStatusButton": "อัปเดตสถานะ"
   },

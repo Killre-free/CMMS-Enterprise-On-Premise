@@ -54,7 +54,10 @@
     "createFailed": "Failed to create work order",
     "description": "Description",
     "machine": "Machine",
-    "selectMachine": "Select a machine...",
+    "selectMachine": "Please select a machine.",
+    "searchOrScanMachine": "Search by code/name, or scan a machine's QR label...",
+    "noMachinesFound": "No machines found.",
+    "changeMachine": "Change machine",
     "priority": "Priority",
     "creating": "Creating...",
     "createWorkOrder": "Create Work Order",
@@ -63,6 +66,7 @@
     "allPriorities": "All priorities",
     "woNumber": "WO #",
     "assignedTo": "Assigned To",
+    "photos": "Photos",
     "loadFailed": "Failed to load work orders.",
     "noWorkOrdersYet": "No work orders yet."
   },
@@ -243,7 +247,9 @@
     "due": "Due {date}",
     "noDueDate": "No due date",
     "recentWorkOrders": "Recent Work Orders",
-    "noWorkOrders": "No work orders for this machine yet."
+    "noWorkOrders": "No work orders for this machine yet.",
+    "printQrLabel": "Print QR Label",
+    "qrCodeAlt": "QR code"
   },
   "WorkOrderDetail": {
     "loading": "Loading...",
@@ -261,7 +267,7 @@
     "closed": "This work order is closed.",
     "selectNextStatus": "Select next status...",
     "commentOptional": "Comment (optional)",
-    "photoUrlsPlaceholder": "Photo URLs, comma separated (required to complete)",
+    "photos": "Photos (required to complete)",
     "updating": "Updating...",
     "updateStatusButton": "Update Status"
   },

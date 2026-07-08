@@ -7,6 +7,7 @@ import { useRouter } from "@/i18n/navigation";
 import { ArrowLeft } from "lucide-react";
 import { apiGet, apiPost, ApiError } from "@/lib/api-client";
 import { Badge, PRIORITY_COLOR, STATUS_COLOR } from "@/components/shared/Badge";
+import { PhotoUpload } from "@/components/shared/PhotoUpload";
 import { formatDate } from "@/lib/utils";
 
 const ALLOWED_NEXT: Record<string, string[]> = {
@@ -54,7 +55,7 @@ export default function WorkOrderDetailPage() {
   const queryClient = useQueryClient();
   const [toStatus, setToStatus] = useState("");
   const [comment, setComment] = useState("");
-  const [photos, setPhotos] = useState("");
+  const [photos, setPhotos] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -80,11 +81,11 @@ export default function WorkOrderDetailPage() {
         toStatus,
         version: wo!.version,
         comment: comment || undefined,
-        photos: photos ? photos.split(",").map((p) => p.trim()).filter(Boolean) : undefined,
+        photos: photos.length > 0 ? photos : undefined,
       });
       setToStatus("");
       setComment("");
-      setPhotos("");
+      setPhotos([]);
       queryClient.invalidateQueries({ queryKey: ["work-order", id] });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t("updateFailed"));
@@ -178,14 +179,7 @@ export default function WorkOrderDetailPage() {
                 className={inputClass}
                 rows={2}
               />
-              {photosRequired && (
-                <input
-                  placeholder={t("photoUrlsPlaceholder")}
-                  value={photos}
-                  onChange={(e) => setPhotos(e.target.value)}
-                  className={inputClass}
-                />
-              )}
+              {photosRequired && <PhotoUpload value={photos} onChange={setPhotos} label={t("photos")} />}
               {error && <p className="text-sm text-destructive">{error}</p>}
               <button
                 type="submit"

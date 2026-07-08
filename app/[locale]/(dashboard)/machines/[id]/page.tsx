@@ -3,7 +3,7 @@ import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Printer } from "lucide-react";
 import { apiGet } from "@/lib/api-client";
 import { Badge, PRIORITY_COLOR, STATUS_COLOR } from "@/components/shared/Badge";
 import { formatDate } from "@/lib/utils";
@@ -16,6 +16,7 @@ interface MachineDetail {
   model: string | null;
   location: string | null;
   lifeCycleStatus: string;
+  qrCode: string | null;
   department: { name: string } | null;
   pmPlans: { id: string; name: string; nextDueAt: string | null; isActive: boolean }[];
   workOrders: {
@@ -46,19 +47,40 @@ export default function MachineDetailPage() {
     <div className="flex flex-col gap-4">
       <button
         onClick={() => router.push("/machines")}
-        className="flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        className="flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-foreground print:hidden"
       >
         <ArrowLeft size={16} /> {t("backToMachines")}
       </button>
 
-      <div>
-        <h1 className="text-xl font-semibold">
-          {machine.machineCode} — {machine.machineName}
-        </h1>
-        <p className="text-sm text-muted-foreground">{machine.department?.name}</p>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <h1 className="text-xl font-semibold">
+            {machine.machineCode} — {machine.machineName}
+          </h1>
+          <p className="text-sm text-muted-foreground">{machine.department?.name}</p>
+        </div>
+        {machine.qrCode && (
+          <button
+            onClick={() => window.print()}
+            className="flex items-center gap-1 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-muted print:hidden"
+          >
+            <Printer size={16} /> {t("printQrLabel")}
+          </button>
+        )}
       </div>
 
-      <div className="rounded-lg border border-border bg-background p-4">
+      {machine.qrCode && (
+        <div className="flex items-center gap-4 rounded-lg border border-border bg-background p-4 print:flex-col print:items-center print:justify-center print:border-none print:p-0">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={machine.qrCode} alt={t("qrCodeAlt")} className="h-32 w-32 print:h-64 print:w-64" />
+          <div className="print:text-center">
+            <p className="text-lg font-semibold print:text-2xl">{machine.machineCode}</p>
+            <p className="text-sm text-muted-foreground print:text-base">{machine.machineName}</p>
+          </div>
+        </div>
+      )}
+
+      <div className="rounded-lg border border-border bg-background p-4 print:hidden">
         <dl className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
           <dt className="text-muted-foreground">{t("manufacturer")}</dt>
           <dd>{machine.manufacturer ?? "—"}</dd>
@@ -71,7 +93,7 @@ export default function MachineDetailPage() {
         </dl>
       </div>
 
-      <div className="rounded-lg border border-border bg-background p-4">
+      <div className="rounded-lg border border-border bg-background p-4 print:hidden">
         <h2 className="mb-2 text-sm font-medium">{t("pmPlans")}</h2>
         {machine.pmPlans.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t("noPmPlans")}</p>
@@ -89,7 +111,7 @@ export default function MachineDetailPage() {
         )}
       </div>
 
-      <div className="rounded-lg border border-border bg-background p-4">
+      <div className="rounded-lg border border-border bg-background p-4 print:hidden">
         <h2 className="mb-2 text-sm font-medium">{t("recentWorkOrders")}</h2>
         {machine.workOrders.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t("noWorkOrders")}</p>
