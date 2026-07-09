@@ -112,6 +112,20 @@
     "loadFailed": "ไม่สามารถโหลดแผน PM ได้",
     "noPmPlansYet": "ยังไม่มีแผน PM"
   },
+  "PMCalendar": {
+    "title": "ปฏิทิน PM",
+    "prevMonth": "เดือนก่อนหน้า",
+    "nextMonth": "เดือนถัดไป",
+    "printCalendar": "พิมพ์",
+    "moreCount": "อีก {count} รายการ",
+    "sun": "อา",
+    "mon": "จ",
+    "tue": "อ",
+    "wed": "พ",
+    "thu": "พฤ",
+    "fri": "ศ",
+    "sat": "ส"
+  },
   "CheckSheets": {
     "title": "แบบตรวจเช็ค",
     "createTemplateFailed": "สร้างเทมเพลตไม่สำเร็จ",
@@ -310,7 +324,13 @@
     "recentWorkOrders": "ใบสั่งงานล่าสุด",
     "noWorkOrders": "ยังไม่มีใบสั่งงานสำหรับเครื่องจักรนี้",
     "printQrLabel": "พิมพ์ QR Label",
-    "qrCodeAlt": "คิวอาร์โค้ด"
+    "qrCodeAlt": "คิวอาร์โค้ด",
+    "documents": "คู่มือและเอกสาร",
+    "noDocuments": "ยังไม่มีคู่มือหรือเอกสารแนบ",
+    "uploadDocument": "อัปโหลดเอกสาร",
+    "uploading": "กำลังอัปโหลด...",
+    "uploadFailed": "อัปโหลดไม่สำเร็จ",
+    "removeDocument": "ลบเอกสาร"
   },
   "WorkOrderDetail": {
     "loading": "กำลังโหลด...",
@@ -343,7 +363,12 @@
     "addPart": "เพิ่ม",
     "adding": "กำลังเพิ่ม...",
     "addPartFailed": "เพิ่มอะไหล่ไม่สำเร็จ",
-    "changePart": "เปลี่ยนอะไหล่"
+    "changePart": "เปลี่ยนอะไหล่",
+    "addRootCause": "+ วิเคราะห์สาเหตุที่แท้จริง (5 Whys)",
+    "hideRootCause": "ซ่อนการวิเคราะห์สาเหตุ",
+    "whyN": "ทำไม #{n}",
+    "rootCauseSummary": "สาเหตุที่แท้จริง (สรุป)",
+    "rootCauseAnalysis": "การวิเคราะห์สาเหตุที่แท้จริง"
   },
   "SparePartDetail": {
     "loading": "กำลังโหลด...",

@@ -81,6 +81,10 @@ export const POST = withApiHandler(async (req, { user, params }) => {
     if (body.toStatus === "Completed") {
       updateData.completedAt = now;
       updateData.completionPhotos = { push: body.photos } as any;
+      if (body.rootCauseWhys && body.rootCauseWhys.some((w) => w.trim().length > 0)) {
+        updateData.rootCauseWhys = body.rootCauseWhys.filter((w) => w.trim().length > 0);
+      }
+      if (body.rootCause) updateData.rootCause = body.rootCause;
     }
     if (body.toStatus === "Closed") {
       updateData.closedAt = now;
@@ -151,6 +155,33 @@ export const POST = withApiHandler(async (req, { user, params }) => {
   });
 
   // ── Notification routing per WORK ORDER > Notification Triggers table ──
+  // "Golden Hour" alert: fire the moment a job becomes actionable for a
+  // technician (i.e. the Accept button appears), not just at creation —
+  // this is the trigger that actually shortens MTTR.
+  if (body.toStatus === "WaitingTechnician") {
+    const recipients = wo.assignedToId
+      ? [wo.assignedToId]
+      : (
+          await prisma.user.findMany({
+            where: {
+              deletedAt: null,
+              isActive: true,
+              departmentId: wo.machine.departmentId ?? undefined,
+              role: { name: "Technician" },
+            },
+            select: { id: true },
+          })
+        ).map((u) => u.id);
+
+    await notify({
+      userIds: recipients,
+      title: `Work Order ${wo.woNumber} ready for pickup`,
+      message: `${wo.title} — ${wo.machine.machineName} is waiting for a technician.`,
+      module: "workOrder",
+      linkUrl: `/work-orders/${wo.id}`,
+    });
+  }
+
   if (body.toStatus === "Accepted") {
     await notify({
       userIds: [wo.requestedById],

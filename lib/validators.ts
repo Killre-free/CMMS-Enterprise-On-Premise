@@ -68,6 +68,8 @@ export const workOrderTransitionSchema = z.object({
   voiceNotes: z.array(z.string()).optional(),
   gpsLatitude: z.number().optional(),
   gpsLongitude: z.number().optional(),
+  rootCauseWhys: z.array(z.string()).max(5).optional(),
+  rootCause: z.string().max(1000).optional(),
 });
 
 // ── Machines ────────────────────────────────────────────────────────────
@@ -88,6 +90,11 @@ export const machineCreateSchema = z.object({
 });
 
 export const machineUpdateSchema = machineCreateSchema.partial();
+
+export const machineDocumentCreateSchema = z.object({
+  fileName: z.string().min(1).max(255),
+  url: z.string().min(1),
+});
 
 // Excel import: departmentName/plantCode (human-readable) instead of
 // departmentId/plantId (opaque ids Excel editors can't be expected to know).

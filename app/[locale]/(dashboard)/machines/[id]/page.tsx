@@ -1,10 +1,11 @@
 "use client";
+import { useRef, useState, type ChangeEvent } from "react";
 import { useParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
-import { ArrowLeft, Printer } from "lucide-react";
-import { apiGet } from "@/lib/api-client";
+import { ArrowLeft, Printer, FileText, Trash2, Upload, Loader2 } from "lucide-react";
+import { apiGet, apiPost, apiDelete, ApiError } from "@/lib/api-client";
 import { Badge, PRIORITY_COLOR, STATUS_COLOR } from "@/components/shared/Badge";
 import { formatDate } from "@/lib/utils";
 
@@ -19,6 +20,7 @@ interface MachineDetail {
   qrCode: string | null;
   department: { name: string } | null;
   pmPlans: { id: string; name: string; nextDueAt: string | null; isActive: boolean }[];
+  documents: { id: string; fileName: string; url: string; createdAt: string }[];
   workOrders: {
     id: string;
     woNumber: string;
@@ -33,11 +35,50 @@ export default function MachineDetailPage() {
   const t = useTranslations("MachineDetail");
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingDoc, setUploadingDoc] = useState(false);
+  const [docError, setDocError] = useState<string | null>(null);
 
   const { data: machine, isLoading } = useQuery({
     queryKey: ["machine", id],
     queryFn: () => apiGet<MachineDetail>(`/api/v1/machines/${id}`),
   });
+
+  async function handleDocUpload(e: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = "";
+    if (files.length === 0) return;
+    setDocError(null);
+    setUploadingDoc(true);
+    try {
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await fetch("/api/v1/uploads", { method: "POST", body: formData });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new ApiError(res.status, body.title ?? res.statusText, body.detail);
+        }
+        const { url } = await res.json();
+        await apiPost(`/api/v1/machines/${id}/documents`, { fileName: file.name, url });
+      }
+      queryClient.invalidateQueries({ queryKey: ["machine", id] });
+    } catch (err) {
+      setDocError(err instanceof ApiError ? (err.detail ?? err.message) : t("uploadFailed"));
+    } finally {
+      setUploadingDoc(false);
+    }
+  }
+
+  async function handleDocDelete(docId: string) {
+    try {
+      await apiDelete(`/api/v1/machines/${id}/documents/${docId}`);
+      queryClient.invalidateQueries({ queryKey: ["machine", id] });
+    } catch {
+      // best-effort
+    }
+  }
 
   if (isLoading || !machine) {
     return <p className="text-sm text-muted-foreground">{t("loading")}</p>;
@@ -109,6 +150,53 @@ export default function MachineDetailPage() {
             ))}
           </ul>
         )}
+      </div>
+
+      <div className="rounded-lg border border-border bg-background p-4 print:hidden">
+        <h2 className="mb-2 text-sm font-medium">{t("documents")}</h2>
+        {machine.documents.length === 0 ? (
+          <p className="mb-3 text-sm text-muted-foreground">{t("noDocuments")}</p>
+        ) : (
+          <ul className="mb-3 flex flex-col gap-2 text-sm">
+            {machine.documents.map((doc) => (
+              <li key={doc.id} className="flex items-center justify-between border-b border-border pb-2 last:border-0">
+                <a
+                  href={doc.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-2 text-primary hover:underline"
+                >
+                  <FileText size={14} /> {doc.fileName}
+                </a>
+                <button
+                  onClick={() => handleDocDelete(doc.id)}
+                  aria-label={t("removeDocument")}
+                  className="text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploadingDoc}
+          className="flex items-center gap-1 rounded-md border border-dashed border-border px-3 py-2 text-sm text-muted-foreground hover:bg-muted disabled:opacity-50"
+        >
+          {uploadingDoc ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+          {uploadingDoc ? t("uploading") : t("uploadDocument")}
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="application/pdf,image/jpeg,image/png,.doc,.docx"
+          multiple
+          className="hidden"
+          onChange={handleDocUpload}
+        />
+        {docError && <p className="mt-2 text-sm text-destructive">{docError}</p>}
       </div>
 
       <div className="rounded-lg border border-border bg-background p-4 print:hidden">

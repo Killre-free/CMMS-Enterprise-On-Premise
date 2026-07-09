@@ -166,6 +166,18 @@ model Machine {
   pmPlans            PMPlan[]
   workOrders         WorkOrder[]
   checkSheetSubmissions CheckSheetSubmission[]
+  documents          MachineDocument[]
+}
+
+// Digital manuals/instructions attached to a machine, replacing paper binders.
+model MachineDocument {
+  id        String   @id @default(uuid())
+  machineId String
+  machine   Machine  @relation(fields: [machineId], references: [id], onDelete: Cascade)
+  fileName  String
+  url       String
+  uploadedBy String?
+  createdAt DateTime @default(now())
 }
 
 // ── Work Orders ─────────────────────────────────────────────────────────
@@ -210,6 +222,10 @@ model WorkOrder {
   estimatedHours    Float?
   reportPhotos      String[] @default([])
   completionPhotos  String[] @default([])
+
+  // Root Cause Analysis (5 Whys), optionally recorded on completion.
+  rootCauseWhys String[] @default([])
+  rootCause     String?
 
   version     Int       @default(0)
   startedAt   DateTime?

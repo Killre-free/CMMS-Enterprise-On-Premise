@@ -15,6 +15,7 @@ export const GET = withApiHandler(async (_req, { user, params }) => {
       department: true,
       plant: true,
       pmPlans: { where: { deletedAt: null } },
+      documents: { orderBy: { createdAt: "desc" } },
       workOrders: {
         where: { deletedAt: null },
         orderBy: { createdAt: "desc" },

@@ -15,6 +15,7 @@ import {
   Legend,
 } from "recharts";
 import { AlertTriangle, ClipboardList, CalendarCheck, Timer, Wallet, PackageX, Activity, Gauge, PackagePlus } from "lucide-react";
+import { PMCalendar } from "@/components/shared/PMCalendar";
 
 interface DashboardData {
   kpiCards: {
@@ -99,7 +100,7 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-4">
       {/* Row 1 — KPI Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 print:hidden">
         <KpiCard icon={AlertTriangle} label={t("breakdowns")} value={kpiCards.breakdownCount} danger={kpiCards.breakdownCount > 0} />
         <KpiCard icon={ClipboardList} label={t("woPending")} value={kpiCards.woPendingCount} />
         <KpiCard icon={CalendarCheck} label={t("pmDueToday")} value={kpiCards.pmDueToday} />
@@ -127,7 +128,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Row 2 — Downtime bar chart + WO status donut */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 print:hidden">
         <div className="rounded-lg border border-border bg-background p-4 lg:col-span-2">
           <h3 className="mb-2 text-sm font-medium">{t("downtimeLast7Days")}</h3>
           <ResponsiveContainer width="100%" height={260}>
@@ -159,6 +160,9 @@ export default function DashboardPage() {
           </ResponsiveContainer>
         </div>
       </div>
+
+      {/* Row 3 — PM Calendar */}
+      <PMCalendar />
     </div>
   );
 }

@@ -112,6 +112,20 @@
     "loadFailed": "Failed to load PM plans.",
     "noPmPlansYet": "No PM plans yet."
   },
+  "PMCalendar": {
+    "title": "PM Calendar",
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
+    "printCalendar": "Print",
+    "moreCount": "+{count} more",
+    "sun": "Sun",
+    "mon": "Mon",
+    "tue": "Tue",
+    "wed": "Wed",
+    "thu": "Thu",
+    "fri": "Fri",
+    "sat": "Sat"
+  },
   "CheckSheets": {
     "title": "Check Sheets",
     "createTemplateFailed": "Failed to create template",
@@ -310,7 +324,13 @@
     "recentWorkOrders": "Recent Work Orders",
     "noWorkOrders": "No work orders for this machine yet.",
     "printQrLabel": "Print QR Label",
-    "qrCodeAlt": "QR code"
+    "qrCodeAlt": "QR code",
+    "documents": "Manuals & Documents",
+    "noDocuments": "No manuals or documents attached yet.",
+    "uploadDocument": "Upload document",
+    "uploading": "Uploading...",
+    "uploadFailed": "Upload failed",
+    "removeDocument": "Remove document"
   },
   "WorkOrderDetail": {
     "loading": "Loading...",
@@ -343,7 +363,12 @@
     "addPart": "Add",
     "adding": "Adding...",
     "addPartFailed": "Failed to add part",
-    "changePart": "Change part"
+    "changePart": "Change part",
+    "addRootCause": "+ Add Root Cause Analysis (5 Whys)",
+    "hideRootCause": "Hide Root Cause Analysis",
+    "whyN": "Why #{n}",
+    "rootCauseSummary": "Root cause (summary)",
+    "rootCauseAnalysis": "Root Cause Analysis"
   },
   "SparePartDetail": {
     "loading": "Loading...",

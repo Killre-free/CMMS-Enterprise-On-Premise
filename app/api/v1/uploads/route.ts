@@ -11,8 +11,11 @@ const ALLOWED_TYPES: Record<string, string> = {
   "image/png": "png",
   "image/webp": "webp",
   "image/gif": "gif",
+  "application/pdf": "pdf",
+  "application/msword": "doc",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
 };
-const MAX_SIZE_BYTES = 10 * 1024 * 1024;
+const MAX_SIZE_BYTES = 25 * 1024 * 1024;
 
 export const POST = withApiHandler(async (req) => {
   if (env.STORAGE_TYPE !== "local") {
@@ -31,12 +34,12 @@ export const POST = withApiHandler(async (req) => {
 
   const ext = ALLOWED_TYPES[file.type];
   if (!ext) {
-    const err = new Error("Only JPEG, PNG, WEBP, and GIF images are allowed.") as Error & { status: number };
+    const err = new Error("Only JPEG, PNG, WEBP, GIF, PDF, DOC, and DOCX files are allowed.") as Error & { status: number };
     err.status = 422;
     throw err;
   }
   if (file.size > MAX_SIZE_BYTES) {
-    const err = new Error("File exceeds the 10MB limit.") as Error & { status: number };
+    const err = new Error("File exceeds the 25MB limit.") as Error & { status: number };
     err.status = 422;
     throw err;
   }

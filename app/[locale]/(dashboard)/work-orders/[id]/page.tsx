@@ -51,6 +51,8 @@ interface WorkOrderDetail {
     quantity: number;
     sparePart: { partCode: string; partName: string; unit: string };
   }[];
+  rootCauseWhys: string[];
+  rootCause: string | null;
 }
 
 interface SparePart {
@@ -86,6 +88,9 @@ export default function WorkOrderDetailPage() {
   const [kitId, setKitId] = useState("");
   const [applyingKit, setApplyingKit] = useState(false);
   const [kitError, setKitError] = useState<string | null>(null);
+  const [showRootCause, setShowRootCause] = useState(false);
+  const [whys, setWhys] = useState(["", "", "", "", ""]);
+  const [rootCause, setRootCause] = useState("");
 
   const { data: wo, isLoading } = useQuery({
     queryKey: ["work-order", id],
@@ -120,10 +125,15 @@ export default function WorkOrderDetailPage() {
         version: wo!.version,
         comment: comment || undefined,
         photos: photos.length > 0 ? photos : undefined,
+        rootCauseWhys: photosRequired ? whys.filter((w) => w.trim()) : undefined,
+        rootCause: photosRequired && rootCause.trim() ? rootCause.trim() : undefined,
       });
       setToStatus("");
       setComment("");
       setPhotos([]);
+      setWhys(["", "", "", "", ""]);
+      setRootCause("");
+      setShowRootCause(false);
       queryClient.invalidateQueries({ queryKey: ["work-order", id] });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t("updateFailed"));
@@ -266,6 +276,20 @@ export default function WorkOrderDetailPage() {
             </ul>
           </div>
 
+          {(wo.rootCauseWhys.length > 0 || wo.rootCause) && (
+            <div className="rounded-lg border border-border bg-background p-4">
+              <h2 className="mb-2 text-sm font-medium">{t("rootCauseAnalysis")}</h2>
+              {wo.rootCauseWhys.length > 0 && (
+                <ol className="mb-2 list-decimal pl-4 text-sm">
+                  {wo.rootCauseWhys.map((w, i) => (
+                    <li key={i}>{w}</li>
+                  ))}
+                </ol>
+              )}
+              {wo.rootCause && <p className="text-sm font-medium">{wo.rootCause}</p>}
+            </div>
+          )}
+
           <div className="rounded-lg border border-border bg-background p-4">
             <h2 className="mb-2 text-sm font-medium">{t("partsUsed")}</h2>
             {wo.partsUsed.length === 0 ? (
@@ -372,6 +396,37 @@ export default function WorkOrderDetailPage() {
                 rows={2}
               />
               {photosRequired && <PhotoUpload value={photos} onChange={setPhotos} label={t("photos")} />}
+              {photosRequired && (
+                <div className="rounded-md border border-border p-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowRootCause((s) => !s)}
+                    className="text-xs font-medium text-primary"
+                  >
+                    {showRootCause ? t("hideRootCause") : t("addRootCause")}
+                  </button>
+                  {showRootCause && (
+                    <div className="mt-2 flex flex-col gap-2">
+                      {whys.map((w, i) => (
+                        <input
+                          key={i}
+                          placeholder={t("whyN", { n: i + 1 })}
+                          value={w}
+                          onChange={(e) => setWhys((prev) => prev.map((v, idx) => (idx === i ? e.target.value : v)))}
+                          className={inputClass}
+                        />
+                      ))}
+                      <textarea
+                        placeholder={t("rootCauseSummary")}
+                        value={rootCause}
+                        onChange={(e) => setRootCause(e.target.value)}
+                        className={inputClass}
+                        rows={2}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
               {error && <p className="text-sm text-destructive">{error}</p>}
               <button
                 type="submit"
