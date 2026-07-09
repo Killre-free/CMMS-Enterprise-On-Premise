@@ -276,10 +276,10 @@ export default function WorkOrderDetailPage() {
             </ul>
           </div>
 
-          {(wo.rootCauseWhys.length > 0 || wo.rootCause) && (
+          {((wo.rootCauseWhys?.length ?? 0) > 0 || wo.rootCause) && (
             <div className="rounded-lg border border-border bg-background p-4">
               <h2 className="mb-2 text-sm font-medium">{t("rootCauseAnalysis")}</h2>
-              {wo.rootCauseWhys.length > 0 && (
+              {(wo.rootCauseWhys?.length ?? 0) > 0 && (
                 <ol className="mb-2 list-decimal pl-4 text-sm">
                   {wo.rootCauseWhys.map((w, i) => (
                     <li key={i}>{w}</li>

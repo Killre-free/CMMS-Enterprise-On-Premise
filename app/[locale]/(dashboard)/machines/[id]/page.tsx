@@ -154,7 +154,7 @@ export default function MachineDetailPage() {
 
       <div className="rounded-lg border border-border bg-background p-4 print:hidden">
         <h2 className="mb-2 text-sm font-medium">{t("documents")}</h2>
-        {machine.documents.length === 0 ? (
+        {(machine.documents?.length ?? 0) === 0 ? (
           <p className="mb-3 text-sm text-muted-foreground">{t("noDocuments")}</p>
         ) : (
           <ul className="mb-3 flex flex-col gap-2 text-sm">
