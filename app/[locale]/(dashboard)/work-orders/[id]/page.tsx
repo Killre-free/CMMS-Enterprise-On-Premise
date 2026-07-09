@@ -136,7 +136,16 @@ export default function WorkOrderDetailPage() {
       setShowRootCause(false);
       queryClient.invalidateQueries({ queryKey: ["work-order", id] });
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t("updateFailed"));
+      if (err instanceof ApiError) {
+        setError(err.detail ?? err.message);
+        if (err.status === 409) {
+          // Someone else updated this work order since the page loaded —
+          // refresh so the stale version number doesn't keep conflicting.
+          queryClient.invalidateQueries({ queryKey: ["work-order", id] });
+        }
+      } else {
+        setError(t("updateFailed"));
+      }
     } finally {
       setSubmitting(false);
     }
@@ -152,7 +161,12 @@ export default function WorkOrderDetailPage() {
       });
       queryClient.invalidateQueries({ queryKey: ["work-order", id] });
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t("updateFailed"));
+      if (err instanceof ApiError) {
+        setError(err.detail ?? err.message);
+        if (err.status === 409) queryClient.invalidateQueries({ queryKey: ["work-order", id] });
+      } else {
+        setError(t("updateFailed"));
+      }
     } finally {
       setAccepting(false);
     }
