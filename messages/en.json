@@ -316,7 +316,11 @@
     "availabilityPercent": "Availability",
     "avgMttrHours": "Avg MTTR (hrs)",
     "avgMtbfHours": "Avg MTBF (hrs)",
-    "avgAvailabilityPercent": "Avg Availability"
+    "avgAvailabilityPercent": "Avg Availability",
+    "chartWorkOrdersByStatus": "Work Orders by Status",
+    "chartMachinesByStatus": "Machines by Status",
+    "chartSparePartsStock": "Current vs Safety Stock",
+    "chartMttrMtbf": "MTTR vs MTBF by Machine"
   },
   "MachineDetail": {
     "loading": "Loading...",
@@ -357,6 +361,7 @@
     "description": "Description",
     "history": "History",
     "changedBy": "{date} by {name}",
+    "viewLocation": "View location",
     "updateStatus": "Update Status",
     "closed": "This work order is closed.",
     "selectNextStatus": "Select next status...",

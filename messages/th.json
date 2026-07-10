@@ -316,7 +316,11 @@
     "availabilityPercent": "ความพร้อมใช้งาน",
     "avgMttrHours": "MTTR เฉลี่ย (ชม.)",
     "avgMtbfHours": "MTBF เฉลี่ย (ชม.)",
-    "avgAvailabilityPercent": "ความพร้อมใช้งานเฉลี่ย"
+    "avgAvailabilityPercent": "ความพร้อมใช้งานเฉลี่ย",
+    "chartWorkOrdersByStatus": "ใบสั่งงานตามสถานะ",
+    "chartMachinesByStatus": "เครื่องจักรตามสถานะ",
+    "chartSparePartsStock": "สต๊อกปัจจุบันเทียบสต๊อกขั้นต่ำ",
+    "chartMttrMtbf": "MTTR เทียบ MTBF รายเครื่องจักร"
   },
   "MachineDetail": {
     "loading": "กำลังโหลด...",
@@ -357,6 +361,7 @@
     "description": "รายละเอียด",
     "history": "ประวัติ",
     "changedBy": "{date} โดย {name}",
+    "viewLocation": "ดูตำแหน่ง",
     "updateStatus": "อัปเดตสถานะ",
     "closed": "ใบสั่งงานนี้ปิดแล้ว",
     "selectNextStatus": "เลือกสถานะถัดไป...",

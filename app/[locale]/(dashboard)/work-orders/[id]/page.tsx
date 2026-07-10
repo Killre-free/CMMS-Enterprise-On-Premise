@@ -36,15 +36,17 @@ interface WorkOrderDetail {
   version: number;
   createdAt: string;
   machine: { machineName: string; machineCode: string };
-  requestedBy: { firstName: string; lastName: string };
-  assignedTo: { firstName: string; lastName: string } | null;
+  requestedBy: { employeeId: string; firstName: string; lastName: string };
+  assignedTo: { employeeId: string; firstName: string; lastName: string } | null;
   stateHistory: {
     id: string;
     fromStatus: string | null;
     toStatus: string;
     changedAt: string;
     comment: string | null;
-    changedBy: { firstName: string; lastName: string };
+    changedBy: { employeeId: string; firstName: string; lastName: string };
+    gpsLatitude: number | null;
+    gpsLongitude: number | null;
   }[];
   partsUsed: {
     id: string;
@@ -68,6 +70,23 @@ interface KitOption {
 }
 
 const inputClass = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm";
+
+// Best-effort GPS tag on status changes (e.g. "where was the technician when
+// they accepted this job") — never blocks the action if location is
+// unavailable/denied, since that's a device/permission issue, not an error.
+function getCurrentPosition(): Promise<{ gpsLatitude?: number; gpsLongitude?: number }> {
+  return new Promise((resolve) => {
+    if (!("geolocation" in navigator)) {
+      resolve({});
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve({ gpsLatitude: pos.coords.latitude, gpsLongitude: pos.coords.longitude }),
+      () => resolve({}),
+      { timeout: 5000, maximumAge: 60_000 }
+    );
+  });
+}
 
 export default function WorkOrderDetailPage() {
   const t = useTranslations("WorkOrderDetail");
@@ -120,6 +139,7 @@ export default function WorkOrderDetailPage() {
     setError(null);
     setSubmitting(true);
     try {
+      const location = await getCurrentPosition();
       await apiPost(`/api/v1/work-orders/${id}/transition`, {
         toStatus,
         version: wo!.version,
@@ -127,6 +147,7 @@ export default function WorkOrderDetailPage() {
         photos: photos.length > 0 ? photos : undefined,
         rootCauseWhys: photosRequired ? whys.filter((w) => w.trim()) : undefined,
         rootCause: photosRequired && rootCause.trim() ? rootCause.trim() : undefined,
+        ...location,
       });
       setToStatus("");
       setComment("");
@@ -155,9 +176,11 @@ export default function WorkOrderDetailPage() {
     setError(null);
     setAccepting(true);
     try {
+      const location = await getCurrentPosition();
       await apiPost(`/api/v1/work-orders/${id}/transition`, {
         toStatus: "Accepted",
         version: wo!.version,
+        ...location,
       });
       queryClient.invalidateQueries({ queryKey: ["work-order", id] });
     } catch (err) {
@@ -258,10 +281,14 @@ export default function WorkOrderDetailPage() {
             <dl className="grid grid-cols-2 gap-2 text-sm">
               <dt className="text-muted-foreground">{t("requestedBy")}</dt>
               <dd>
-                {wo.requestedBy.firstName} {wo.requestedBy.lastName}
+                {wo.requestedBy.firstName} {wo.requestedBy.lastName} ({wo.requestedBy.employeeId})
               </dd>
               <dt className="text-muted-foreground">{t("assignedTo")}</dt>
-              <dd>{wo.assignedTo ? `${wo.assignedTo.firstName} ${wo.assignedTo.lastName}` : t("unassigned")}</dd>
+              <dd>
+                {wo.assignedTo
+                  ? `${wo.assignedTo.firstName} ${wo.assignedTo.lastName} (${wo.assignedTo.employeeId})`
+                  : t("unassigned")}
+              </dd>
               <dt className="text-muted-foreground">{t("created")}</dt>
               <dd>{formatDate(wo.createdAt)}</dd>
               {wo.description && (
@@ -282,7 +309,23 @@ export default function WorkOrderDetailPage() {
                     {h.fromStatus ? `${h.fromStatus} → ${h.toStatus}` : h.toStatus}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {t("changedBy", { date: formatDate(h.changedAt), name: `${h.changedBy.firstName} ${h.changedBy.lastName}` })}
+                    {t("changedBy", {
+                      date: formatDate(h.changedAt),
+                      name: `${h.changedBy.firstName} ${h.changedBy.lastName} (${h.changedBy.employeeId})`,
+                    })}
+                    {h.gpsLatitude !== null && h.gpsLongitude !== null && (
+                      <>
+                        {" — "}
+                        <a
+                          href={`https://www.google.com/maps?q=${h.gpsLatitude},${h.gpsLongitude}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-primary hover:underline"
+                        >
+                          {t("viewLocation")}
+                        </a>
+                      </>
+                    )}
                   </div>
                   {h.comment && <div className="mt-1">{h.comment}</div>}
                 </li>

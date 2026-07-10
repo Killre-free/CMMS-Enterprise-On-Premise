@@ -5,8 +5,22 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { utils, writeFile } from "xlsx";
 import { Download, Printer } from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
 import { apiGet, type Page } from "@/lib/api-client";
 import { formatDate } from "@/lib/utils";
+
+const CHART_COLORS = ["#2563eb", "#16a34a", "#ca8a04", "#dc2626", "#7c3aed", "#0891b2", "#64748b"];
 
 type ReportType = "workOrders" | "spareParts" | "machines" | "maintenanceKpis";
 
@@ -122,6 +136,40 @@ export default function ReportsPage() {
 
   const rows = useMemo(() => data?.data ?? [], [data]);
 
+  const chart = useMemo(() => {
+    if (reportType === "workOrders") {
+      const counts: Record<string, number> = {};
+      for (const r of rows) counts[r.status] = (counts[r.status] ?? 0) + 1;
+      return { kind: "pie" as const, title: t("chartWorkOrdersByStatus"), data: Object.entries(counts).map(([name, value]) => ({ name, value })) };
+    }
+    if (reportType === "machines") {
+      const counts: Record<string, number> = {};
+      for (const r of rows) counts[r.lifeCycleStatus] = (counts[r.lifeCycleStatus] ?? 0) + 1;
+      return { kind: "pie" as const, title: t("chartMachinesByStatus"), data: Object.entries(counts).map(([name, value]) => ({ name, value })) };
+    }
+    if (reportType === "spareParts") {
+      const s1 = t("currentStock");
+      const s2 = t("safetyStock");
+      return {
+        kind: "bar" as const,
+        title: t("chartSparePartsStock"),
+        series: [s1, s2],
+        data: rows.slice(0, 12).map((r) => ({ name: r.partCode, [s1]: r.currentStock, [s2]: r.safetyStock })),
+      };
+    }
+    if (reportType === "maintenanceKpis") {
+      const s1 = t("mttrHours");
+      const s2 = t("mtbfHours");
+      return {
+        kind: "bar" as const,
+        title: t("chartMttrMtbf"),
+        series: [s1, s2],
+        data: rows.slice(0, 12).map((r) => ({ name: r.machineCode, [s1]: r.mttrHours ?? 0, [s2]: r.mtbfHours ?? 0 })),
+      };
+    }
+    return null;
+  }, [reportType, rows, t]);
+
   function exportCsv() {
     const csv = toCsv(config.columns, rows);
     downloadBlob(csv, `${reportType}-report.csv`, "text/csv;charset=utf-8;");
@@ -194,6 +242,35 @@ export default function ReportsPage() {
               {data.summary.avgAvailabilityPercent !== null ? `${data.summary.avgAvailabilityPercent}%` : "—"}
             </p>
           </div>
+        </div>
+      )}
+
+      {chart && chart.data.length > 0 && (
+        <div className="rounded-lg border border-border bg-background p-4">
+          <h3 className="mb-2 text-sm font-medium">{chart.title}</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            {chart.kind === "pie" ? (
+              <PieChart>
+                <Pie data={chart.data} dataKey="value" nameKey="name" innerRadius={60} outerRadius={100} label>
+                  {chart.data.map((_, i) => (
+                    <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Legend />
+                <Tooltip />
+              </PieChart>
+            ) : (
+              <BarChart data={chart.data}>
+                <XAxis dataKey="name" fontSize={12} />
+                <YAxis fontSize={12} />
+                <Tooltip />
+                <Legend />
+                {chart.series.map((s, i) => (
+                  <Bar key={s} dataKey={s} fill={CHART_COLORS[i % CHART_COLORS.length]} radius={[4, 4, 0, 0]} />
+                ))}
+              </BarChart>
+            )}
+          </ResponsiveContainer>
         </div>
       )}
 
