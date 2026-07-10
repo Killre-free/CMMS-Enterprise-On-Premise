@@ -2,9 +2,16 @@
 // app/[locale]/(auth)/login/page.tsx
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { signIn } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
+import { apiGet } from "@/lib/api-client";
+
+interface PublicBranding {
+  companyName: string;
+  logoUrl: string | null;
+}
 
 export default function LoginPage() {
   return (
@@ -18,6 +25,10 @@ function LoginForm() {
   const t = useTranslations("Login");
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { data: branding } = useQuery({
+    queryKey: ["settings", "public"],
+    queryFn: () => apiGet<PublicBranding>("/api/v1/settings/public"),
+  });
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -51,11 +62,15 @@ function LoginForm() {
     <div className="flex min-h-screen items-center justify-center bg-muted">
       <div className="w-full max-w-sm rounded-lg border border-border bg-background p-8 shadow-sm">
         <div className="mb-6 flex flex-col items-center gap-2">
-          {/* Company logo — falls back to default wordmark until System Settings logo is uploaded */}
-          <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary text-primary-foreground font-bold">
-            C
-          </div>
-          <h1 className="text-lg font-semibold">CMMS Pro</h1>
+          {branding?.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={branding.logoUrl} alt={branding.companyName} className="h-12 w-12 rounded-md object-contain" />
+          ) : (
+            <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary text-primary-foreground font-bold">
+              {(branding?.companyName ?? "CMMS Pro").charAt(0).toUpperCase()}
+            </div>
+          )}
+          <h1 className="text-lg font-semibold">{branding?.companyName ?? "CMMS Pro"}</h1>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">

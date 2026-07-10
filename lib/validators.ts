@@ -257,7 +257,7 @@ export const permissionMatrixSchema = z.object({
 
 export const systemSettingsUpdateSchema = z.object({
   companyName: z.string().min(1).optional(),
-  logoUrl: z.string().url().optional(),
+  logoUrl: z.string().min(1).optional(),
   timezone: z.string().min(1).optional(),
   language: z.string().min(1).optional(),
 });

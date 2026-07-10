@@ -1,7 +1,8 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
+import { Loader2, Upload } from "lucide-react";
 import { apiGet, apiPatch, ApiError } from "@/lib/api-client";
 
 interface SystemSettings {
@@ -34,6 +35,8 @@ export default function SettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (data) {
@@ -46,6 +49,29 @@ export default function SettingsPage() {
 
   if (isLoading) {
     return <p className="text-sm text-muted-foreground">{t("loading")}</p>;
+  }
+
+  async function handleLogoUpload(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setError(null);
+    setUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/v1/uploads", { method: "POST", body: formData });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new ApiError(res.status, body.title ?? res.statusText, body.detail);
+      }
+      const { url } = await res.json();
+      setLogoUrl(url);
+    } catch (err) {
+      setError(err instanceof ApiError ? (err.detail ?? err.message) : t("saveFailed"));
+    } finally {
+      setUploadingLogo(false);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -81,7 +107,32 @@ export default function SettingsPage() {
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">{t("logoUrl")}</label>
-            <input value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} className={inputClass} />
+            <div className="flex items-center gap-3">
+              {logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={logoUrl} alt="" className="h-12 w-12 rounded-md border border-border object-contain" />
+              ) : (
+                <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary text-primary-foreground font-bold">
+                  {(companyName || "C").charAt(0).toUpperCase()}
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingLogo}
+                className="flex items-center gap-1 rounded-md border border-dashed border-border px-3 py-2 text-sm text-muted-foreground hover:bg-muted disabled:opacity-50"
+              >
+                {uploadingLogo ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+                {uploadingLogo ? t("uploading") : t("uploadLogo")}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                className="hidden"
+                onChange={handleLogoUpload}
+              />
+            </div>
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">{t("timezone")}</label>

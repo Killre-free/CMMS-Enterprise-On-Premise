@@ -58,7 +58,9 @@
     "partsBelowSafety": "Parts Below Safety",
     "reorderPending": "Reorder Suggestions Pending",
     "downtimeLast7Days": "Downtime (last 7 days)",
-    "workOrderStatus": "Work Order Status"
+    "workOrderStatus": "Work Order Status",
+    "mttrMtbfByMachine": "MTTR / MTBF by Machine",
+    "viewFullReport": "View full report"
   },
   "WorkOrders": {
     "title_plural": "Work Orders",
@@ -257,7 +259,9 @@
     "saveFailed": "Failed to save settings",
     "title": "Settings",
     "companyName": "Company Name",
-    "logoUrl": "Logo URL",
+    "logoUrl": "Company Logo",
+    "uploadLogo": "Upload logo",
+    "uploading": "Uploading...",
     "timezone": "Timezone",
     "defaultLanguage": "Default Language",
     "saved": "Saved.",

@@ -14,8 +14,10 @@ import {
   Cell,
   Legend,
 } from "recharts";
-import { AlertTriangle, ClipboardList, CalendarCheck, Timer, Wallet, PackageX, Activity, Gauge, PackagePlus } from "lucide-react";
+import { AlertTriangle, ClipboardList, CalendarCheck, Timer, Wallet, PackageX, Activity, Gauge, PackagePlus, ArrowRight } from "lucide-react";
 import { PMCalendar } from "@/components/shared/PMCalendar";
+import { Link } from "@/i18n/navigation";
+import { apiGet } from "@/lib/api-client";
 
 interface DashboardData {
   kpiCards: {
@@ -40,6 +42,12 @@ async function fetchDashboard(): Promise<DashboardData> {
   const res = await fetch("/api/v1/dashboard");
   if (!res.ok) throw new Error("Failed to load dashboard");
   return res.json();
+}
+
+interface MaintenanceKpiRow {
+  machineCode: string;
+  mttrHours: number | null;
+  mtbfHours: number | null;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -80,6 +88,14 @@ export default function DashboardPage() {
     queryFn: fetchDashboard,
     refetchInterval: 60_000,
   });
+
+  const { data: kpiReport } = useQuery({
+    queryKey: ["maintenance-kpis", "dashboard-chart"],
+    queryFn: () => apiGet<{ data: MaintenanceKpiRow[] }>("/api/v1/reports/maintenance-kpis"),
+  });
+  const kpiChartData = (kpiReport?.data ?? [])
+    .slice(0, 8)
+    .map((r) => ({ machineCode: r.machineCode, mttr: r.mttrHours ?? 0, mtbf: r.mtbfHours ?? 0 }));
 
   if (isLoading) {
     return (
@@ -161,7 +177,32 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Row 3 — PM Calendar */}
+      {/* Row 3 — MTTR/MTBF by machine */}
+      {kpiChartData.length > 0 && (
+        <div className="rounded-lg border border-border bg-background p-4 print:hidden">
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="text-sm font-medium">{t("mttrMtbfByMachine")}</h3>
+            <Link
+              href="/reports?type=maintenanceKpis"
+              className="flex items-center gap-1 text-sm text-primary hover:underline"
+            >
+              {t("viewFullReport")} <ArrowRight size={14} />
+            </Link>
+          </div>
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={kpiChartData}>
+              <XAxis dataKey="machineCode" fontSize={12} />
+              <YAxis fontSize={12} unit="h" />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="mttr" name={t("mttrHours")} fill="#dc2626" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="mtbf" name={t("mtbfHours")} fill="#2563eb" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {/* Row 4 — PM Calendar */}
       <PMCalendar />
     </div>
   );

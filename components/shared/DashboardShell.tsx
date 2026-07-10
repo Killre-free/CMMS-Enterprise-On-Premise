@@ -1,9 +1,11 @@
 "use client";
 // components/shared/DashboardShell.tsx
 import { useEffect, useState, type ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { signOut } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { apiGet } from "@/lib/api-client";
 import {
   LayoutDashboard,
   ClipboardList,
@@ -55,6 +57,11 @@ export function DashboardShell({ user, children }: { user: SessionUser; children
   const [dark, setDark] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const { data: branding } = useQuery({
+    queryKey: ["settings", "public"],
+    queryFn: () => apiGet<{ companyName: string; logoUrl: string | null }>("/api/v1/settings/public"),
+  });
+  const appName = branding?.companyName ?? "CMMS Pro";
 
   useEffect(() => {
     setCollapsed(localStorage.getItem("sidebarCollapsed") === "true");
@@ -104,7 +111,13 @@ export function DashboardShell({ user, children }: { user: SessionUser; children
         )}
       >
         <div className="flex h-14 items-center justify-between gap-2 border-b border-border px-4 font-semibold">
-          <span className={cn(collapsed && "md:hidden")}>CMMS Pro</span>
+          <span className={cn("flex items-center gap-2", collapsed && "md:hidden")}>
+            {branding?.logoUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={branding.logoUrl} alt={appName} className="h-6 w-6 rounded object-contain" />
+            )}
+            {appName}
+          </span>
           <button
             onClick={toggleCollapsed}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -152,7 +165,7 @@ export function DashboardShell({ user, children }: { user: SessionUser; children
           >
             <Menu size={20} />
           </button>
-          <div className="hidden font-medium md:block">CMMS Pro</div>
+          <div className="hidden font-medium md:block">{appName}</div>
           <div className="flex items-center gap-3">
             <NotificationBell />
             <button onClick={toggleLocale} aria-label="Switch language" className="flex items-center gap-1 text-sm">

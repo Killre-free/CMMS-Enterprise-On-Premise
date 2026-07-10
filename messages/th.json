@@ -58,7 +58,9 @@
     "partsBelowSafety": "อะไหล่ต่ำกว่าจุดสั่งซื้อ",
     "reorderPending": "รายการรอสั่งซื้อ",
     "downtimeLast7Days": "เวลาหยุดเครื่อง (7 วันล่าสุด)",
-    "workOrderStatus": "สถานะใบสั่งงาน"
+    "workOrderStatus": "สถานะใบสั่งงาน",
+    "mttrMtbfByMachine": "MTTR / MTBF รายเครื่องจักร",
+    "viewFullReport": "ดูรายงานฉบับเต็ม"
   },
   "WorkOrders": {
     "title_plural": "ใบสั่งงาน",
@@ -257,7 +259,9 @@
     "saveFailed": "บันทึกการตั้งค่าไม่สำเร็จ",
     "title": "ตั้งค่าระบบ",
     "companyName": "ชื่อบริษัท",
-    "logoUrl": "URL โลโก้",
+    "logoUrl": "โลโก้บริษัท",
+    "uploadLogo": "อัปโหลดโลโก้",
+    "uploading": "กำลังอัปโหลด...",
     "timezone": "เขตเวลา",
     "defaultLanguage": "ภาษาเริ่มต้น",
     "saved": "บันทึกแล้ว",

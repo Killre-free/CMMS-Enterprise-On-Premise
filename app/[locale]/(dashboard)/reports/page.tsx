@@ -1,5 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { utils, writeFile } from "xlsx";
@@ -83,7 +84,11 @@ function toCsv(columns: Column<any>[], rows: any[]): string {
 }
 
 function downloadBlob(content: string, filename: string, mime: string) {
-  const blob = new Blob([content], { type: mime });
+  // Prepend a UTF-8 BOM so Excel (which otherwise guesses the system ANSI
+  // codepage for .csv files) renders Thai/non-ASCII text correctly instead
+  // of garbled mojibake.
+  const BOM = String.fromCharCode(0xfeff);
+  const blob = new Blob([BOM + content], { type: mime });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -92,10 +97,16 @@ function downloadBlob(content: string, filename: string, mime: string) {
   URL.revokeObjectURL(url);
 }
 
+const VALID_REPORT_TYPES: ReportType[] = ["workOrders", "spareParts", "machines", "maintenanceKpis"];
+
 export default function ReportsPage() {
   const t = useTranslations("Reports");
   const tc = useTranslations("Common");
-  const [reportType, setReportType] = useState<ReportType>("workOrders");
+  const searchParams = useSearchParams();
+  const initialType = searchParams.get("type");
+  const [reportType, setReportType] = useState<ReportType>(
+    VALID_REPORT_TYPES.includes(initialType as ReportType) ? (initialType as ReportType) : "workOrders"
+  );
   const REPORT_CONFIG = useMemo(() => buildReportConfig(t), [t]);
   const config = REPORT_CONFIG[reportType];
 
