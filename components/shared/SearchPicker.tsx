@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Search, X } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Search, X, ScanLine } from "lucide-react";
+import { QrScannerModal } from "@/components/shared/QrScannerModal";
 
 export interface PickableItem {
   id: string;
@@ -23,8 +25,10 @@ interface SearchPickerProps {
 // extra UI — this same component backs both the machine and spare-part
 // pickers since both already carry a printed qrCode/barcode.
 export function SearchPicker({ items, value, onChange, placeholder, noResultsText, changeLabel }: SearchPickerProps) {
+  const tc = useTranslations("Common");
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [scanning, setScanning] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const selected = items.find((i) => i.id === value) ?? null;
@@ -80,6 +84,14 @@ export function SearchPicker({ items, value, onChange, placeholder, noResultsTex
           className="w-full bg-transparent text-sm outline-none"
           autoComplete="off"
         />
+        <button
+          type="button"
+          onClick={() => setScanning(true)}
+          aria-label={tc("scanQrCode")}
+          className="shrink-0 text-muted-foreground hover:text-foreground"
+        >
+          <ScanLine size={16} />
+        </button>
       </div>
       {open && (
         <ul className="absolute z-10 mt-1 max-h-56 w-full overflow-y-auto rounded-md border border-border bg-background shadow-lg">
@@ -100,6 +112,18 @@ export function SearchPicker({ items, value, onChange, placeholder, noResultsTex
             </li>
           ))}
         </ul>
+      )}
+      {scanning && (
+        <QrScannerModal
+          title={tc("scanQrCode")}
+          cameraDeniedText={tc("cameraAccessDenied")}
+          cancelText={tc("cancel")}
+          onClose={() => setScanning(false)}
+          onDetected={(code) => {
+            setScanning(false);
+            setQuery(code);
+          }}
+        />
       )}
     </div>
   );

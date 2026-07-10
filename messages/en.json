@@ -41,7 +41,9 @@
     "saving": "Saving...",
     "cancel": "Cancel",
     "edit": "Edit",
-    "delete": "Delete"
+    "delete": "Delete",
+    "scanQrCode": "Scan QR code",
+    "cameraAccessDenied": "Couldn't access the camera. Check your browser's camera permission, or type the code instead."
   },
   "Dashboard": {
     "loadFailed": "Failed to load dashboard data.",
