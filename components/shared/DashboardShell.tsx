@@ -20,6 +20,7 @@ import {
   Sun,
   LogOut,
   Menu,
+  X,
   Languages,
   PanelLeftClose,
   PanelLeftOpen,
@@ -59,6 +60,12 @@ export function DashboardShell({ user, children }: { user: SessionUser; children
     setCollapsed(localStorage.getItem("sidebarCollapsed") === "true");
   }, []);
 
+  // Close the mobile drawer whenever the route changes, so navigating to a
+  // page doesn't leave the sidebar stuck open over the content.
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
+
   function toggleCollapsed() {
     setCollapsed((c) => {
       const next = !c;
@@ -82,6 +89,13 @@ export function DashboardShell({ user, children }: { user: SessionUser; children
 
   return (
     <div className="flex min-h-screen">
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+          className="fixed inset-0 z-30 bg-black/40 md:hidden"
+        />
+      )}
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-40 w-64 -translate-x-full border-r border-border bg-background transition-all md:static md:translate-x-0 print:hidden",
@@ -97,6 +111,13 @@ export function DashboardShell({ user, children }: { user: SessionUser; children
             className="hidden shrink-0 text-muted-foreground hover:text-foreground md:block"
           >
             {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+          </button>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            aria-label="Close menu"
+            className="shrink-0 text-muted-foreground hover:text-foreground md:hidden"
+          >
+            <X size={20} />
           </button>
         </div>
         <nav className="flex flex-col gap-1 p-2">

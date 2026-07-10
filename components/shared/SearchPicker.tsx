@@ -81,7 +81,7 @@ export function SearchPicker({ items, value, onChange, placeholder, noResultsTex
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setOpen(true)}
           placeholder={placeholder}
-          className="w-full bg-transparent text-sm outline-none"
+          className="w-full min-w-0 flex-1 bg-transparent text-sm outline-none"
           autoComplete="off"
         />
         <button
