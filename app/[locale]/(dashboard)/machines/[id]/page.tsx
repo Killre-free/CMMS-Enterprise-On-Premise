@@ -4,8 +4,8 @@ import { useParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
-import { ArrowLeft, Printer, FileText, Trash2, Upload, Loader2 } from "lucide-react";
-import { apiGet, apiPost, apiDelete, ApiError } from "@/lib/api-client";
+import { ArrowLeft, Printer, FileText, Trash2, Upload, Loader2, Pencil } from "lucide-react";
+import { apiGet, apiPost, apiPatch, apiDelete, ApiError } from "@/lib/api-client";
 import { Badge, PRIORITY_COLOR, STATUS_COLOR } from "@/components/shared/Badge";
 import { formatDate } from "@/lib/utils";
 
@@ -31,19 +31,85 @@ interface MachineDetail {
   }[];
 }
 
+const inputClass = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm";
+const LIFE_CYCLE_STATUSES = ["Active", "UnderMaintenance", "Retired"];
+
 export default function MachineDetailPage() {
   const t = useTranslations("MachineDetail");
+  const tc = useTranslations("Common");
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadingDoc, setUploadingDoc] = useState(false);
   const [docError, setDocError] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [editFields, setEditFields] = useState({
+    machineCode: "",
+    machineName: "",
+    manufacturer: "",
+    model: "",
+    location: "",
+    lifeCycleStatus: "Active",
+  });
+  const [editError, setEditError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const { data: machine, isLoading } = useQuery({
     queryKey: ["machine", id],
     queryFn: () => apiGet<MachineDetail>(`/api/v1/machines/${id}`),
   });
+
+  function startEdit() {
+    if (!machine) return;
+    setEditFields({
+      machineCode: machine.machineCode,
+      machineName: machine.machineName,
+      manufacturer: machine.manufacturer ?? "",
+      model: machine.model ?? "",
+      location: machine.location ?? "",
+      lifeCycleStatus: machine.lifeCycleStatus,
+    });
+    setEditError(null);
+    setEditing(true);
+  }
+
+  async function handleSaveEdit(e: React.FormEvent) {
+    e.preventDefault();
+    setEditError(null);
+    setSaving(true);
+    try {
+      await apiPatch(`/api/v1/machines/${id}`, {
+        machineCode: editFields.machineCode,
+        machineName: editFields.machineName,
+        manufacturer: editFields.manufacturer || undefined,
+        model: editFields.model || undefined,
+        location: editFields.location || undefined,
+        lifeCycleStatus: editFields.lifeCycleStatus,
+      });
+      queryClient.invalidateQueries({ queryKey: ["machine", id] });
+      queryClient.invalidateQueries({ queryKey: ["machines"] });
+      setEditing(false);
+    } catch (err) {
+      setEditError(err instanceof ApiError ? err.message : t("saveFailed"));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDeleteMachine() {
+    if (!window.confirm(t("confirmDelete"))) return;
+    setDeleting(true);
+    try {
+      await apiDelete(`/api/v1/machines/${id}`);
+      queryClient.invalidateQueries({ queryKey: ["machines"] });
+      router.push("/machines");
+    } catch (err) {
+      setEditError(err instanceof ApiError ? err.message : t("deleteFailed"));
+      setDeleting(false);
+    }
+  }
 
   async function handleDocUpload(e: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
@@ -100,14 +166,31 @@ export default function MachineDetailPage() {
           </h1>
           <p className="text-sm text-muted-foreground">{machine.department?.name}</p>
         </div>
-        {machine.qrCode && (
+        <div className="flex gap-2 print:hidden">
+          {machine.qrCode && (
+            <button
+              onClick={() => window.print()}
+              className="flex items-center gap-1 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-muted"
+            >
+              <Printer size={16} /> {t("printQrLabel")}
+            </button>
+          )}
+          {!editing && (
+            <button
+              onClick={startEdit}
+              className="flex items-center gap-1 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-muted"
+            >
+              <Pencil size={16} /> {tc("edit")}
+            </button>
+          )}
           <button
-            onClick={() => window.print()}
-            className="flex items-center gap-1 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-muted print:hidden"
+            onClick={handleDeleteMachine}
+            disabled={deleting}
+            className="flex items-center gap-1 rounded-md border border-destructive px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 disabled:opacity-50"
           >
-            <Printer size={16} /> {t("printQrLabel")}
+            <Trash2 size={16} /> {tc("delete")}
           </button>
-        )}
+        </div>
       </div>
 
       {machine.qrCode && (
@@ -122,16 +205,97 @@ export default function MachineDetailPage() {
       )}
 
       <div className="rounded-lg border border-border bg-background p-4 print:hidden">
-        <dl className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
-          <dt className="text-muted-foreground">{t("manufacturer")}</dt>
-          <dd>{machine.manufacturer ?? "—"}</dd>
-          <dt className="text-muted-foreground">{t("model")}</dt>
-          <dd>{machine.model ?? "—"}</dd>
-          <dt className="text-muted-foreground">{t("location")}</dt>
-          <dd>{machine.location ?? "—"}</dd>
-          <dt className="text-muted-foreground">{t("status")}</dt>
-          <dd>{machine.lifeCycleStatus}</dd>
-        </dl>
+        {editing ? (
+          <form onSubmit={handleSaveEdit} className="flex flex-col gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-sm font-medium">{t("machineCode")}</label>
+                <input
+                  required
+                  value={editFields.machineCode}
+                  onChange={(e) => setEditFields((f) => ({ ...f, machineCode: e.target.value }))}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium">{t("machineName")}</label>
+                <input
+                  required
+                  value={editFields.machineName}
+                  onChange={(e) => setEditFields((f) => ({ ...f, machineName: e.target.value }))}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium">{t("manufacturer")}</label>
+                <input
+                  value={editFields.manufacturer}
+                  onChange={(e) => setEditFields((f) => ({ ...f, manufacturer: e.target.value }))}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium">{t("model")}</label>
+                <input
+                  value={editFields.model}
+                  onChange={(e) => setEditFields((f) => ({ ...f, model: e.target.value }))}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium">{t("location")}</label>
+                <input
+                  value={editFields.location}
+                  onChange={(e) => setEditFields((f) => ({ ...f, location: e.target.value }))}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium">{t("status")}</label>
+                <select
+                  value={editFields.lifeCycleStatus}
+                  onChange={(e) => setEditFields((f) => ({ ...f, lifeCycleStatus: e.target.value }))}
+                  className={inputClass}
+                >
+                  {LIFE_CYCLE_STATUSES.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            {editError && <p className="text-sm text-destructive">{editError}</p>}
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={saving}
+                className="w-fit rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+              >
+                {saving ? tc("saving") : tc("save")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditing(false)}
+                className="w-fit rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
+              >
+                {tc("cancel")}
+              </button>
+            </div>
+          </form>
+        ) : (
+          <dl className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
+            <dt className="text-muted-foreground">{t("manufacturer")}</dt>
+            <dd>{machine.manufacturer ?? "—"}</dd>
+            <dt className="text-muted-foreground">{t("model")}</dt>
+            <dd>{machine.model ?? "—"}</dd>
+            <dt className="text-muted-foreground">{t("location")}</dt>
+            <dd>{machine.location ?? "—"}</dd>
+            <dt className="text-muted-foreground">{t("status")}</dt>
+            <dd>{machine.lifeCycleStatus}</dd>
+          </dl>
+        )}
+        {editError && !editing && <p className="mt-2 text-sm text-destructive">{editError}</p>}
       </div>
 
       <div className="rounded-lg border border-border bg-background p-4 print:hidden">

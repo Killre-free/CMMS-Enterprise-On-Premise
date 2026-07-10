@@ -114,7 +114,9 @@
     "plan": "แผน",
     "nextDue": "ครบกำหนดถัดไป",
     "loadFailed": "ไม่สามารถโหลดแผน PM ได้",
-    "noPmPlansYet": "ยังไม่มีแผน PM"
+    "noPmPlansYet": "ยังไม่มีแผน PM",
+    "editPmPlan": "แก้ไขแผน PM",
+    "confirmDelete": "ต้องการลบแผน PM นี้ใช่หรือไม่? ไม่สามารถกู้คืนจากหน้าเว็บได้"
   },
   "PMCalendar": {
     "title": "ปฏิทิน PM",
@@ -319,6 +321,8 @@
   "MachineDetail": {
     "loading": "กำลังโหลด...",
     "backToMachines": "กลับไปหน้าเครื่องจักร",
+    "machineCode": "รหัสเครื่องจักร",
+    "machineName": "ชื่อเครื่องจักร",
     "manufacturer": "ผู้ผลิต",
     "model": "รุ่น",
     "location": "ตำแหน่งที่ตั้ง",
@@ -336,7 +340,10 @@
     "uploadDocument": "อัปโหลดเอกสาร",
     "uploading": "กำลังอัปโหลด...",
     "uploadFailed": "อัปโหลดไม่สำเร็จ",
-    "removeDocument": "ลบเอกสาร"
+    "removeDocument": "ลบเอกสาร",
+    "saveFailed": "บันทึกการแก้ไขไม่สำเร็จ",
+    "deleteFailed": "ลบเครื่องจักรไม่สำเร็จ",
+    "confirmDelete": "ต้องการลบเครื่องจักรนี้ใช่หรือไม่? ไม่สามารถกู้คืนจากหน้าเว็บได้"
   },
   "WorkOrderDetail": {
     "loading": "กำลังโหลด...",
@@ -390,7 +397,12 @@
     "date": "วันที่",
     "recordStockTransaction": "บันทึกรายการสต๊อก",
     "saving": "กำลังบันทึก...",
-    "recordTransaction": "บันทึกรายการ"
+    "recordTransaction": "บันทึกรายการ",
+    "partName": "ชื่ออะไหล่",
+    "unit": "หน่วย",
+    "saveFailed": "บันทึกการแก้ไขไม่สำเร็จ",
+    "deleteFailed": "ลบอะไหล่ไม่สำเร็จ",
+    "confirmDelete": "ต้องการลบอะไหล่นี้ใช่หรือไม่? ไม่สามารถกู้คืนจากหน้าเว็บได้"
   },
   "UserDetail": {
     "loading": "กำลังโหลด...",
@@ -405,7 +417,10 @@
     "superAdminNotice": "นี่คือบัญชี Super Admin เริ่มต้น — ไม่สามารถแก้ไขบทบาทหรือสถานะการใช้งานที่นี่ได้",
     "saved": "บันทึกแล้ว",
     "saving": "กำลังบันทึก...",
-    "saveChanges": "บันทึกการเปลี่ยนแปลง"
+    "saveChanges": "บันทึกการเปลี่ยนแปลง",
+    "deleteUser": "ลบผู้ใช้งาน",
+    "deleteFailed": "ลบผู้ใช้งานไม่สำเร็จ",
+    "confirmDelete": "ต้องการลบผู้ใช้งานนี้ใช่หรือไม่? ไม่สามารถกู้คืนจากหน้าเว็บได้"
   },
   "RoleDetail": {
     "loading": "กำลังโหลด...",

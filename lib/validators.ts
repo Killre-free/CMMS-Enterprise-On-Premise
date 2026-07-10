@@ -181,6 +181,8 @@ export const pmPlanCreateSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
+export const pmPlanUpdateSchema = pmPlanCreateSchema.partial();
+
 // ── Spare Parts ─────────────────────────────────────────────────────────
 
 export const sparePartCreateSchema = z.object({

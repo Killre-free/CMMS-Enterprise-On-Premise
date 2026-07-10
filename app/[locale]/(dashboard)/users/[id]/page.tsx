@@ -4,8 +4,8 @@ import { useParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
-import { ArrowLeft } from "lucide-react";
-import { apiGet, apiPatch, ApiError } from "@/lib/api-client";
+import { ArrowLeft, Trash2 } from "lucide-react";
+import { apiGet, apiPatch, apiDelete, ApiError } from "@/lib/api-client";
 
 interface UserDetail {
   id: string;
@@ -51,6 +51,7 @@ export default function UserDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -91,6 +92,19 @@ export default function UserDetailPage() {
     }
   }
 
+  async function handleDeleteUser() {
+    if (!window.confirm(t("confirmDelete"))) return;
+    setDeleting(true);
+    try {
+      await apiDelete(`/api/v1/users/${id}`);
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      router.push("/users");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : t("deleteFailed"));
+      setDeleting(false);
+    }
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <button
@@ -100,9 +114,20 @@ export default function UserDetailPage() {
         <ArrowLeft size={16} /> {t("backToUsers")}
       </button>
 
-      <h1 className="text-xl font-semibold">
-        {user.employeeId} — {user.username}
-      </h1>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <h1 className="text-xl font-semibold">
+          {user.employeeId} — {user.username}
+        </h1>
+        {!user.isSuperAdmin && (
+          <button
+            onClick={handleDeleteUser}
+            disabled={deleting}
+            className="flex items-center gap-1 rounded-md border border-destructive px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 disabled:opacity-50"
+          >
+            <Trash2 size={16} /> {t("deleteUser")}
+          </button>
+        )}
+      </div>
 
       <div className="max-w-lg rounded-lg border border-border bg-background p-4">
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">

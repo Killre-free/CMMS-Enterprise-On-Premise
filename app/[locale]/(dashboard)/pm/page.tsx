@@ -2,8 +2,8 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { Plus } from "lucide-react";
-import { apiGet, apiPost, ApiError, type Page } from "@/lib/api-client";
+import { Plus, Pencil, Trash2 } from "lucide-react";
+import { apiGet, apiPost, apiPatch, apiDelete, ApiError, type Page } from "@/lib/api-client";
 import { Modal } from "@/components/shared/Modal";
 import { MachinePicker } from "@/components/shared/MachinePicker";
 import { formatDate } from "@/lib/utils";
@@ -15,6 +15,7 @@ interface PMPlan {
   frequencyValue: number | null;
   nextDueAt: string | null;
   isActive: boolean;
+  machineId: string;
   machine: { machineCode: string; machineName: string };
 }
 
@@ -27,17 +28,18 @@ interface Machine {
 const inputClass = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm";
 const FREQUENCIES = ["Daily", "Weekly", "Monthly", "Quarterly", "Yearly", "RunningHour"];
 
-function CreatePMForm({ onDone }: { onDone: () => void }) {
+function CreatePMForm({ onDone, editPlan }: { onDone: () => void; editPlan?: PMPlan }) {
   const t = useTranslations("PM");
+  const tc = useTranslations("Common");
   const queryClient = useQueryClient();
   const { data: machines } = useQuery({
     queryKey: ["machines", "options"],
     queryFn: () => apiGet<{ data: Machine[] }>("/api/v1/machines/options"),
   });
-  const [name, setName] = useState("");
-  const [machineId, setMachineId] = useState("");
-  const [frequencyType, setFrequencyType] = useState("Monthly");
-  const [frequencyValue, setFrequencyValue] = useState("");
+  const [name, setName] = useState(editPlan?.name ?? "");
+  const [machineId, setMachineId] = useState(editPlan?.machineId ?? "");
+  const [frequencyType, setFrequencyType] = useState(editPlan?.frequencyType ?? "Monthly");
+  const [frequencyValue, setFrequencyValue] = useState(editPlan?.frequencyValue ? String(editPlan.frequencyValue) : "");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -50,12 +52,17 @@ function CreatePMForm({ onDone }: { onDone: () => void }) {
     setError(null);
     setSubmitting(true);
     try {
-      await apiPost("/api/v1/pm", {
+      const payload = {
         name,
         machineId,
         frequencyType,
         frequencyValue: frequencyValue ? Number(frequencyValue) : undefined,
-      });
+      };
+      if (editPlan) {
+        await apiPatch(`/api/v1/pm/${editPlan.id}`, payload);
+      } else {
+        await apiPost("/api/v1/pm", payload);
+      }
       queryClient.invalidateQueries({ queryKey: ["pm-plans"] });
       onDone();
     } catch (err) {
@@ -102,7 +109,7 @@ function CreatePMForm({ onDone }: { onDone: () => void }) {
         disabled={submitting}
         className="mt-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
       >
-        {submitting ? t("creating") : t("createPmPlan")}
+        {submitting ? tc("saving") : editPlan ? tc("save") : t("createPmPlan")}
       </button>
     </form>
   );
@@ -111,11 +118,23 @@ function CreatePMForm({ onDone }: { onDone: () => void }) {
 export default function PMPage() {
   const t = useTranslations("PM");
   const tc = useTranslations("Common");
+  const queryClient = useQueryClient();
   const [modalOpen, setModalOpen] = useState(false);
+  const [editingPlan, setEditingPlan] = useState<PMPlan | null>(null);
   const { data, isLoading, error } = useQuery({
     queryKey: ["pm-plans"],
     queryFn: () => apiGet<Page<PMPlan>>("/api/v1/pm"),
   });
+
+  async function handleDelete(id: string) {
+    if (!window.confirm(t("confirmDelete"))) return;
+    try {
+      await apiDelete(`/api/v1/pm/${id}`);
+      queryClient.invalidateQueries({ queryKey: ["pm-plans"] });
+    } catch {
+      // best-effort
+    }
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -138,26 +157,27 @@ export default function PMPage() {
               <th className="p-3 font-medium">{t("frequency")}</th>
               <th className="p-3 font-medium">{t("nextDue")}</th>
               <th className="p-3 font-medium">{tc("active")}</th>
+              <th className="p-3 font-medium"></th>
             </tr>
           </thead>
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={5} className="p-6 text-center text-muted-foreground">
+                <td colSpan={6} className="p-6 text-center text-muted-foreground">
                   {tc("loading")}
                 </td>
               </tr>
             )}
             {error && (
               <tr>
-                <td colSpan={5} className="p-6 text-center text-destructive">
+                <td colSpan={6} className="p-6 text-center text-destructive">
                   {t("loadFailed")}
                 </td>
               </tr>
             )}
             {data?.data.length === 0 && (
               <tr>
-                <td colSpan={5} className="p-6 text-center text-muted-foreground">
+                <td colSpan={6} className="p-6 text-center text-muted-foreground">
                   {t("noPmPlansYet")}
                 </td>
               </tr>
@@ -174,6 +194,24 @@ export default function PMPage() {
                 </td>
                 <td className="p-3">{p.nextDueAt ? formatDate(p.nextDueAt) : "—"}</td>
                 <td className="p-3">{p.isActive ? tc("yes") : tc("no")}</td>
+                <td className="p-3">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setEditingPlan(p)}
+                      aria-label={tc("edit")}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <Pencil size={14} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(p.id)}
+                      aria-label={tc("delete")}
+                      className="text-muted-foreground hover:text-destructive"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -182,6 +220,10 @@ export default function PMPage() {
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={t("newPmPlan")}>
         <CreatePMForm onDone={() => setModalOpen(false)} />
+      </Modal>
+
+      <Modal open={editingPlan !== null} onClose={() => setEditingPlan(null)} title={t("editPmPlan")}>
+        {editingPlan && <CreatePMForm editPlan={editingPlan} onDone={() => setEditingPlan(null)} />}
       </Modal>
     </div>
   );

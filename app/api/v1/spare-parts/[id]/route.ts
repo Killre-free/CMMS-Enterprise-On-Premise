@@ -56,3 +56,28 @@ export const PATCH = withApiHandler(async (req, { user, params }) => {
 
   return NextResponse.json(updated);
 });
+
+export const DELETE = withApiHandler(async (req, { user, params }) => {
+  await assertPermission(user.id, "sparePart", "delete");
+  const instance = `/api/v1/spare-parts/${params.id}`;
+
+  const existing = await prisma.sparePart.findFirst({ where: { id: params.id, deletedAt: null } });
+  if (!existing) {
+    return NextResponse.json(problem(404, "Not Found", `Spare part ${params.id} was not found`, instance), { status: 404 });
+  }
+
+  await prisma.sparePart.update({ where: { id: params.id }, data: { deletedAt: new Date() } });
+
+  await writeAuditLog({
+    userId: user.id,
+    username: user.username,
+    action: "Delete",
+    module: "sparePart",
+    recordId: params.id,
+    recordType: "SparePart",
+    oldValue: { partCode: existing.partCode },
+    ...requestMeta(req),
+  });
+
+  return new NextResponse(null, { status: 204 });
+});

@@ -114,7 +114,9 @@
     "plan": "Plan",
     "nextDue": "Next Due",
     "loadFailed": "Failed to load PM plans.",
-    "noPmPlansYet": "No PM plans yet."
+    "noPmPlansYet": "No PM plans yet.",
+    "editPmPlan": "Edit PM Plan",
+    "confirmDelete": "Delete this PM plan? This cannot be undone from the UI."
   },
   "PMCalendar": {
     "title": "PM Calendar",
@@ -319,6 +321,8 @@
   "MachineDetail": {
     "loading": "Loading...",
     "backToMachines": "Back to Machines",
+    "machineCode": "Machine Code",
+    "machineName": "Machine Name",
     "manufacturer": "Manufacturer",
     "model": "Model",
     "location": "Location",
@@ -336,7 +340,10 @@
     "uploadDocument": "Upload document",
     "uploading": "Uploading...",
     "uploadFailed": "Upload failed",
-    "removeDocument": "Remove document"
+    "removeDocument": "Remove document",
+    "saveFailed": "Failed to save changes",
+    "deleteFailed": "Failed to delete machine",
+    "confirmDelete": "Delete this machine? This cannot be undone from the UI."
   },
   "WorkOrderDetail": {
     "loading": "Loading...",
@@ -390,7 +397,12 @@
     "date": "Date",
     "recordStockTransaction": "Record Stock Transaction",
     "saving": "Saving...",
-    "recordTransaction": "Record Transaction"
+    "recordTransaction": "Record Transaction",
+    "partName": "Part Name",
+    "unit": "Unit",
+    "saveFailed": "Failed to save changes",
+    "deleteFailed": "Failed to delete spare part",
+    "confirmDelete": "Delete this spare part? This cannot be undone from the UI."
   },
   "UserDetail": {
     "loading": "Loading...",
@@ -405,7 +417,10 @@
     "superAdminNotice": "This is the seeded Super Admin account — role and active status can't be changed here.",
     "saved": "Saved.",
     "saving": "Saving...",
-    "saveChanges": "Save Changes"
+    "saveChanges": "Save Changes",
+    "deleteUser": "Delete User",
+    "deleteFailed": "Failed to delete user",
+    "confirmDelete": "Delete this user? This cannot be undone from the UI."
   },
   "RoleDetail": {
     "loading": "Loading...",
